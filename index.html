@@ -384,8 +384,10 @@ function exportReadableText() {
 
   const text = lines.join('\n');
 
-  // 1. Try text share (works on mobile + desktop)
-  if (navigator.share) {
+  // Mobile: try share API, fallback to download
+  // Desktop: always download
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (isMobile && navigator.share) {
     navigator.share({ text: text }).then(() => {
       markExported();
       showToast('已分享');
@@ -395,7 +397,6 @@ function exportReadableText() {
     return;
   }
 
-  // 2. Fallback: download
   downloadText(text);
 }
 
