@@ -384,23 +384,27 @@ function exportReadableText() {
 
   const text = lines.join('\n');
 
+  // Embed JSON at the bottom so the same file can be imported
+  const jsonPart = JSON.stringify(data);
+  const combined = text + '\n\n---JSON---\n' + jsonPart + '\n---JSON---\n';
+
   // Mobile: try share API, fallback to download
   // Desktop: always download
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   if (isMobile && navigator.share) {
-    navigator.share({ text: text }).then(() => {
+    navigator.share({ text: combined }).then(() => {
       markExported();
       showToast('已分享');
     }).catch(() => {
-      downloadText(text);
+      downloadExport(combined);
     });
     return;
   }
 
-  downloadText(text);
+  downloadExport(combined);
 }
 
-function downloadText(text) {
+function downloadExport(text) {
   const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -411,7 +415,7 @@ function downloadText(text) {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
   markExported();
-  showToast('已导出');
+  showToast('已导出（可阅读可恢复）');
 }
 
 function importBackup() {
@@ -421,36 +425,34 @@ function importBackup() {
 function handleImport(file) {
   const reader = new FileReader();
   reader.onload = function(e) {
+    const raw = e.target.result;
+    let jsonStr = null;
+
+    // 1. Try embedded JSON markers
+    const m = raw.match(/---JSON---\n([\s\S]*?)\n---JSON---/);
+    if (m) jsonStr = m[1];
+
+    // 2. Try parsing the whole file as pure JSON (old format)
+    if (!jsonStr) {
+      try { JSON.parse(raw); jsonStr = raw; } catch(_) {}
+    }
+
+    if (!jsonStr) { showToast('文件中未找到可用数据', true); return; }
+
     try {
-      const data = JSON.parse(e.target.result);
-      if (!data.entries) throw new Error('Invalid format');
+      const data = JSON.parse(jsonStr);
+      if (!data.entries) throw new Error('Invalid');
       const existing = loadData();
       // Merge: imported entries take priority for same date
       const merged = Object.assign({}, existing.entries, data.entries);
       saveData({ entries: merged });
-      showToast('导入成功！');
+      showToast('导入成功！共恢复 ' + Object.keys(data.entries).length + ' 天记录');
       initApp();
     } catch(err) {
       showToast('文件格式不正确', true);
     }
   };
   reader.readAsText(file);
-}
-
-// ====== EXPORT BACKUP JSON (for import/restore) ======
-function exportBackupJson() {
-  const data = loadData();
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `成功日记_备份_${getTodayKey()}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  markExported();
-  showToast('备份已导出');
 }
 
 // ====== TOAST ======
