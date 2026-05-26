@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>成功日记</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC",sans-serif;
+  background:#faf7f2;color:#3d3d3d;min-height:100vh;
+  -webkit-tap-highlight-color:transparent;
+}
+.container{max-width:680px;margin:0 auto;padding:16px 16px 100px}
+
+.header{display:flex;align-items:center;justify-content:space-between;padding:12px 0 8px;border-bottom:2px solid #e8dccc}
+.header h1{font-size:22px;font-weight:700;color:#5a4a3a;letter-spacing:1px}
+.header-sub{display:flex;align-items:center;gap:10px}
+.streak{background:#f5e6d0;color:#8a6a4a;padding:3px 10px;border-radius:16px;font-size:13px;font-weight:600}
+.date-display{font-size:13px;color:#9a8a7a;margin-top:4px}
+
+/* Tabs */
+.tabs{display:flex;margin:14px 0 12px;background:#ede4d8;border-radius:12px;padding:3px}
+.tab{flex:1;text-align:center;padding:10px 0;border:none;background:none;font-size:15px;font-weight:500;color:#8a7a6a;cursor:pointer;border-radius:10px;transition:.2s;font-family:inherit}
+.tab.active{background:#fff;color:#5a4a3a;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.tab:hover:not(.active){color:#5a4a3a}
+.tab-section{display:none}
+.tab-section.active{display:block}
+
+/* Today tab */
+.entry-list{list-style:none;display:flex;flex-direction:column;gap:10px}
+.entry-item{display:flex;align-items:flex-start;gap:10px;background:#fff;padding:10px 14px;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.04);border:2px solid transparent;transition:.2s;align-items:center}
+.entry-item:focus-within{border-color:#d4b89a}
+.entry-num{width:26px;height:26px;border-radius:50%;background:#f5e6d0;color:#8a6a4a;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.entry-item textarea{flex:1;border:none;outline:none;font-size:16px;background:transparent;color:#3d3d3d;font-family:inherit;resize:vertical;min-height:40px;line-height:1.5;padding:2px 0}
+.entry-item textarea::placeholder{color:#c4b4a4}
+.btn-save{display:block;width:100%;margin-top:14px;background:#c9a87c;color:#fff;border:none;padding:14px;border-radius:12px;font-size:17px;font-weight:600;cursor:pointer;transition:.2s;font-family:inherit}
+.btn-save:hover{background:#b8976a}
+
+/* Calendar tab */
+.cal-nav{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:10px}
+.cal-nav button{background:#ede4d8;border:none;width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;color:#5a4a3a;transition:.2s;display:flex;align-items:center;justify-content:center}
+.cal-nav button:hover{background:#d4c4b4}
+.cal-nav .month-label{font-size:17px;font-weight:700;color:#5a4a3a;min-width:110px;text-align:center}
+.cal-legend{display:flex;gap:16px;justify-content:center;font-size:12px;color:#9a8a7a;margin-bottom:8px}
+.cal-legend span{display:flex;align-items:center;gap:4px}
+.cal-legend .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.dot-green{background:#a8c97c}.dot-yellow{background:#e8cc88}.dot-red{background:#e0a4a4}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.cal-header{font-size:12px;color:#b09a7a;padding:6px 0;font-weight:600}
+.cal-cell{border-radius:10px;padding:6px 2px;min-height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:.15s;font-size:15px;color:#5a4a3a;position:relative}
+.cal-cell:hover{opacity:.85;transform:scale(1.04)}
+.cal-cell.other-month{color:#d4c4b4}
+.cal-cell.today{font-weight:800;box-shadow:inset 0 0 0 2px #5a4a3a}
+.cal-cell.green{background:#d4ebbc}
+.cal-cell.yellow{background:#faf0d0}
+.cal-cell.red{background:#f5dbdb}
+.cal-cell.empty{background:transparent;cursor:default}
+.cal-cell.empty:hover{opacity:1;transform:none}
+.cal-cell .dot-indicator{width:6px;height:6px;border-radius:50%;margin-top:2px}
+.cal-cell.green .dot-indicator{background:#7aaa4a}
+.cal-cell.yellow .dot-indicator{background:#c9a030}
+.cal-cell.red .dot-indicator{background:#c05050}
+
+/* Search row */
+.search-row{display:flex;gap:8px;margin-bottom:12px;align-items:center}
+.search-row input{flex:1;padding:8px 12px;border:2px solid #e8dccc;border-radius:10px;font-size:14px;outline:none;font-family:inherit;background:#fff;color:#3d3d3d}
+.search-row input:focus{border-color:#d4b89a}
+.search-row button{background:#c9a87c;color:#fff;border:none;padding:8px 16px;border-radius:10px;font-size:14px;cursor:pointer;font-family:inherit;font-weight:600}
+
+/* Stats tab */
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.stat-card{background:#fff;border-radius:14px;padding:16px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.stat-card .num{font-size:32px;font-weight:800;color:#5a4a3a}
+.stat-card .label{font-size:13px;color:#b09a7a;margin-top:4px}
+.stat-card.full{grid-column:1/-1}
+.stat-bar{margin-top:12px;height:8px;background:#f0e8dc;border-radius:4px;overflow:hidden}
+.stat-bar .fill{height:100%;background:#c9a87c;border-radius:4px;transition:.3s}
+
+/* Bottom bar */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e8dccc;padding:10px 16px;display:flex;gap:10px;justify-content:center;z-index:50}
+.bottom-bar button{flex:1;max-width:160px;padding:8px 0;border-radius:10px;border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:.2s}
+.btn-export{background:#ede4d8;color:#5a4a3a}
+.btn-export:hover{background:#e0d4c4}
+.btn-import{background:#f5e6d0;color:#8a6a4a}
+.btn-import:hover{background:#ecdcc0}
+
+/* Backup reminder banner */
+.reminder{background:#fff3cd;color:#856404;padding:10px 14px;border-radius:10px;font-size:13px;text-align:center;margin-bottom:10px;display:none;animation:slideDown .3s ease}
+.reminder.show{display:block}
+.reminder a{color:#856404;font-weight:700;text-decoration:underline;cursor:pointer}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:100;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:20px;max-width:460px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.12)}
+.modal h2{font-size:17px;color:#5a4a3a;margin-bottom:12px}
+.modal .mitems{list-style:none;margin-bottom:6px}
+.modal .mitems li{font-size:14px;color:#3d3d3d;padding:5px 0;display:flex;gap:8px;line-height:1.5}
+.modal .mitems li::before{content:"★";color:#d4b89a;flex-shrink:0}
+.modal .mitems li.empty{color:#c4b4a4}
+.modal .mitems li.empty::before{content:"☆";color:#e8dccc}
+.modal .btn-close{display:block;margin-top:10px;margin-left:auto;background:none;border:none;color:#9a8a7a;font-size:14px;cursor:pointer;padding:6px 14px;font-family:inherit}
+
+/* Toast */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#3d3d3d;color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;z-index:200;opacity:0;transition:.3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+.toast.warn{background:#e08030}
+
+/* Footer note */
+.footer-note{text-align:center;color:#c4b4a4;font-size:11px;padding:8px 0}
+
+@media(max-width:380px){
+  .cal-cell{min-height:38px;font-size:13px;padding:4px 1px}
+  .cal-grid{gap:2px}
+}
+</style>
+</head>
+<body>
+<div class="container" id="app">
+  <div class="header">
+    <div>
+      <h1>成功日记</h1>
+      <div class="date-display" id="dateDisplay"></div>
+    </div>
+    <div class="header-sub">
+      <span class="streak" id="streakBadge">🔥 0 天</span>
+    </div>
+  </div>
+
+  <div class="reminder" id="reminderBanner">
+    ⚠️ 你已经 <strong id="reminderDays">7</strong> 天没有备份了，建议 <a id="reminderExport">立即导出</a>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="today">今天</button>
+    <button class="tab" data-tab="calendar">日历</button>
+    <button class="tab" data-tab="stats">统计</button>
+  </div>
+
+  <!-- Today -->
+  <div class="tab-section active" id="tab-today">
+    <ul class="entry-list" id="entryList"></ul>
+    <button class="btn-save" id="btnSave">✅ 保存</button>
+  </div>
+
+  <!-- Calendar -->
+  <div class="tab-section" id="tab-calendar">
+    <div class="cal-nav">
+      <button id="calPrev">◂</button>
+      <span class="month-label" id="calLabel"></span>
+      <button id="calNext">▸</button>
+    </div>
+    <div class="cal-legend">
+      <span><span class="dot dot-green"></span>5条</span>
+      <span><span class="dot dot-yellow"></span>1-4条</span>
+      <span><span class="dot dot-red"></span>未记录</span>
+    </div>
+    <div class="search-row">
+      <input type="text" id="searchInput" placeholder="搜索日期，如 2026-05-26 或 5月26日">
+      <button id="searchBtn">跳转</button>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+  </div>
+
+  <!-- Stats -->
+  <div class="tab-section" id="tab-stats">
+    <div class="stats-grid" id="statsGrid"></div>
+  </div>
+
+  <div class="footer-note" style="margin-top:16px">数据存储在浏览器本地，建议定期导出备份</div>
+</div>
+
+<!-- Bottom bar -->
+<div class="bottom-bar">
+  <button class="btn-export" id="btnExportText">📤 导出文本</button>
+  <button class="btn-import" id="btnImport">📥 导入恢复</button>
+</div>
+<input type="file" id="importFile" accept=".json" style="display:none">
+
+<!-- Modal -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <h2 id="modalDate"></h2>
+    <ul class="mitems" id="modalItems"></ul>
+    <button class="btn-close" id="modalClose">关闭</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ====== DATA ======
+const STORAGE_KEY = 'success_diary_data';
+const EXPORT_KEY = 'success_diary_last_export';
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return { entries: {} };
+}
+
+function saveData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function getTodayKey() {
+  const d = new Date();
+  return fmtDateKey(d);
+}
+
+function fmtDateKey(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function parseDateKey(key) {
+  const [y,m,d] = key.split('-').map(Number);
+  return new Date(y, m-1, d);
+}
+
+function formatDate(key) {
+  const d = parseDateKey(key);
+  const weekdays = ['日','一','二','三','四','五','六'];
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 周${weekdays[d.getDay()]}`;
+}
+
+function formatDateShort(key) {
+  const [y,m,d] = key.split('-').map(Number);
+  const weekdays = ['日','一','二','三','四','五','六'];
+  return `${y}年${m}月${d}日 周${weekdays[new Date(y,m-1,d).getDay()]}`;
+}
+
+// Entry helpers
+function countItems(entry) {
+  if (!entry || !entry.items) return 0;
+  return entry.items.filter(t => t.trim()).length;
+}
+
+function hasEntry(key) {
+  const data = loadData();
+  const entry = data.entries[key];
+  return entry && countItems(entry) > 0;
+}
+
+function getEntryStatus(entry) {
+  const n = countItems(entry);
+  if (n === 5) return 'green';
+  if (n >= 1) return 'yellow';
+  return 'red';
+}
+
+// ====== STATS ======
+function calcStats(data) {
+  const entries = data.entries;
+  const keys = Object.keys(entries);
+  const validKeys = keys.filter(k => countItems(entries[k]) > 0);
+  const totalDays = validKeys.length;
+  const totalItems = validKeys.reduce((sum, k) => sum + countItems(entries[k]), 0);
+
+  // Streak (continuous from today backwards)
+  let streak = 0;
+  const d = new Date();
+  for (let i = 0; i < 365; i++) {
+    const key = fmtDateKey(d);
+    const entry = data.entries[key];
+    if (entry && countItems(entry) > 0) {
+      streak++;
+      d.setDate(d.getDate() - 1);
+    } else break;
+  }
+
+  // This week
+  const now = new Date();
+  const weekStart = new Date(now);
+  weekStart.setDate(now.getDate() - now.getDay());
+  let weekDays = 0, weekFull = 0, weekPartial = 0;
+  for (let i = 0; i < 7; i++) {
+    const wd = new Date(weekStart);
+    wd.setDate(weekStart.getDate() + i);
+    if (wd > now) continue; // don't count future days
+    const key = fmtDateKey(wd);
+    if (hasEntryToday(key)) {
+      weekDays++;
+      const n = countItems(data.entries[key]);
+      if (n === 5) weekFull++;
+      else weekPartial++;
+    }
+  }
+
+  // This month
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+  const today = now.getDate();
+  let monthDays = 0, monthFull = 0;
+  for (let i = 1; i <= today; i++) {
+    const key = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+    if (hasEntryToday(key)) {
+      monthDays++;
+      if (countItems(data.entries[key]) === 5) monthFull++;
+    }
+  }
+
+  // Longest streak
+  let longestStreak = 0;
+  if (validKeys.length === 0) longestStreak = 0;
+  else {
+    const sorted = validKeys.sort();
+    let current = 1;
+    longestStreak = 1;
+    for (let i = 1; i < sorted.length; i++) {
+      const prev = parseDateKey(sorted[i-1]);
+      const curr = parseDateKey(sorted[i]);
+      const diff = (curr - prev) / (1000*60*60*24);
+      if (diff === 1) { current++; longestStreak = Math.max(longestStreak, current); }
+      else { current = 1; }
+    }
+  }
+
+  return { totalDays, totalItems, streak, weekDays, weekFull, weekPartial, monthDays, monthFull, daysInMonth, today, longestStreak };
+}
+
+function hasEntryToday(key) {
+  const data = loadData();
+  const entry = data.entries[key];
+  return entry && countItems(entry) > 0;
+}
+
+// ====== BACKUP REMINDER ======
+function checkBackupReminder() {
+  const lastExport = localStorage.getItem(EXPORT_KEY);
+  if (!lastExport) return; // never exported, no reminder yet
+
+  const days = Math.floor((Date.now() - parseInt(lastExport)) / (1000*60*60*24));
+  if (days >= 7) {
+    const banner = document.getElementById('reminderBanner');
+    document.getElementById('reminderDays').textContent = days;
+    banner.classList.add('show');
+  }
+}
+
+function markExported() {
+  localStorage.setItem(EXPORT_KEY, String(Date.now()));
+  document.getElementById('reminderBanner').classList.remove('show');
+}
+
+// ====== EXPORT / IMPORT ======
+function exportReadableText() {
+  const data = loadData();
+  const validKeys = Object.keys(data.entries)
+    .filter(k => countItems(data.entries[k]) > 0)
+    .sort((a,b) => b.localeCompare(a));
+
+  if (validKeys.length === 0) {
+    showToast('还没有可导出的记录', true);
+    return;
+  }
+
+  const stats = calcStats(data);
+  const lines = [];
+  lines.push('📖 我的成功日记');
+  lines.push(`导出时间：${formatDate(getTodayKey())}`);
+  lines.push('');
+  lines.push('━━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('');
+
+  for (const key of validKeys) {
+    lines.push(formatDate(key));
+    const items = data.entries[key].items;
+    for (let i = 0; i < 5; i++) {
+      const text = items[i] ? items[i].trim() : '';
+      lines.push(text ? `  ${i+1}. ${text}` : `  ${i+1}. （未记录）`);
+    }
+    lines.push('');
+  }
+
+  lines.push('━━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('');
+  lines.push('📊 统计概览');
+  lines.push(`总记录天数：${stats.totalDays} 天`);
+  lines.push(`总成就数：${stats.totalItems} 件`);
+  lines.push(`最长连续打卡：${stats.longestStreak} 天`);
+
+  const text = lines.join('\n');
+
+  // Try Web Share API first (mobile)
+  if (navigator.share && navigator.canShare) {
+    const blob = new Blob([text], { type: 'text/plain' });
+    const file = new File([blob], `成功日记_${getTodayKey()}.txt`, { type: 'text/plain' });
+    const shareData = { files: [file], title: '成功日记导出' };
+    if (navigator.canShare(shareData)) {
+      navigator.share(shareData).then(() => {
+        markExported();
+      }).catch(() => {
+        downloadText(text);
+      });
+      return;
+    }
+  }
+
+  downloadText(text);
+}
+
+function downloadText(text) {
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `成功日记_${getTodayKey()}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  markExported();
+  showToast('已导出');
+}
+
+function importBackup() {
+  document.getElementById('importFile').click();
+}
+
+function handleImport(file) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.entries) throw new Error('Invalid format');
+      const existing = loadData();
+      // Merge: imported entries take priority for same date
+      const merged = Object.assign({}, existing.entries, data.entries);
+      saveData({ entries: merged });
+      showToast('导入成功！');
+      initApp();
+    } catch(err) {
+      showToast('文件格式不正确', true);
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ====== EXPORT BACKUP JSON (for import/restore) ======
+function exportBackupJson() {
+  const data = loadData();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `成功日记_备份_${getTodayKey()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  markExported();
+  showToast('备份已导出');
+}
+
+// ====== TOAST ======
+let toastTimer;
+function showToast(msg, warn) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (warn ? ' warn' : '') + ' show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.className = 'toast', 2000);
+}
+
+// ====== APP ======
+const app = {
+  data: loadData(),
+
+  init() {
+    this.renderTodayFields();
+    this.renderToday();
+    this.renderStats();
+    this.bindEvents();
+    checkBackupReminder();
+    document.getElementById('dateDisplay').textContent = formatDateShort(getTodayKey());
+    document.getElementById('streakBadge').textContent = '🔥 ' + calcStats(this.data).streak + ' 天';
+  },
+
+  renderTodayFields() {
+    const list = document.getElementById('entryList');
+    let html = '';
+    for (let i = 0; i < 5; i++) {
+      html += `<li class="entry-item">
+        <span class="entry-num">${i+1}</span>
+        <textarea class="entry-input" placeholder="今天做成了什么？" rows="2" data-i="${i}"></textarea>
+      </li>`;
+    }
+    list.innerHTML = html;
+  },
+
+  renderToday() {
+    const todayKey = getTodayKey();
+    const entry = this.data.entries[todayKey];
+    const textareas = document.querySelectorAll('.entry-input');
+    textareas.forEach((ta, i) => {
+      ta.value = (entry && entry.items && entry.items[i]) ? entry.items[i] : '';
+    });
+  },
+
+  handleSave() {
+    const textareas = document.querySelectorAll('.entry-input');
+    const items = Array.from(textareas).map(ta => ta.value.trim());
+    const todayKey = getTodayKey();
+    this.data.entries[todayKey] = {
+      items: items,
+      timestamp: new Date().toISOString()
+    };
+    saveData(this.data);
+    document.getElementById('streakBadge').textContent = '🔥 ' + calcStats(this.data).streak + ' 天';
+    showToast('已保存');
+    // Auto-save on each keystroke is handled by blur; this is explicit save
+  },
+
+  // ====== CALENDAR ======
+  calYear: null,
+  calMonth: null,
+
+  openCalendar() {
+    const now = new Date();
+    if (this.calYear === null) { this.calYear = now.getFullYear(); this.calMonth = now.getMonth() + 1; }
+    this.renderCalendar();
+  },
+
+  changeMonth(delta) {
+    this.calMonth += delta;
+    if (this.calMonth > 12) { this.calMonth = 1; this.calYear++; }
+    if (this.calMonth < 1) { this.calMonth = 12; this.calYear--; }
+    this.renderCalendar();
+  },
+
+  renderCalendar() {
+    document.getElementById('calLabel').textContent = `${this.calYear}年${this.calMonth}月`;
+
+    const grid = document.getElementById('calGrid');
+    const dayHeaders = ['日','一','二','三','四','五','六'];
+    let html = dayHeaders.map(d => `<div class="cal-header">${d}</div>`).join('');
+
+    const firstDay = new Date(this.calYear, this.calMonth - 1, 1);
+    const lastDay = new Date(this.calYear, this.calMonth, 0);
+    const daysInMonth = lastDay.getDate();
+    const startDow = firstDay.getDay();
+
+    const today = getTodayKey();
+    const data = loadData();
+
+    // Empty cells before month start
+    for (let i = 0; i < startDow; i++) {
+      html += '<div class="cal-cell empty"></div>';
+    }
+
+    // Day cells
+    for (let day = 1; day <= daysInMonth; day++) {
+      const key = `${this.calYear}-${String(this.calMonth).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      const entry = data.entries[key];
+      const status = getEntryStatus(entry);
+      const isToday = key === today;
+      const cls = ['cal-cell', status, isToday ? 'today' : ''].filter(Boolean).join(' ');
+      html += `<div class="${cls}" data-date="${key}">${day}</div>`;
+    }
+
+    // Empty cells after month end
+    const totalCells = startDow + daysInMonth;
+    const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+    for (let i = 0; i < remaining; i++) {
+      html += '<div class="cal-cell empty"></div>';
+    }
+
+    grid.innerHTML = html;
+  },
+
+  // ====== STATS ======
+  renderStats() {
+    const stats = calcStats(loadData());
+    const today = getTodayKey();
+    const weekRate = stats.today > 0 ? Math.round((stats.weekDays / (new Date().getDay() + 1)) * 100) : 0;
+    const monthRate = Math.round((stats.monthDays / stats.today) * 100);
+
+    document.getElementById('statsGrid').innerHTML = `
+      <div class="stat-card">
+        <div class="num">${stats.totalDays}</div>
+        <div class="label">总记录天数</div>
+      </div>
+      <div class="stat-card">
+        <div class="num">${stats.totalItems}</div>
+        <div class="label">总成就数</div>
+      </div>
+      <div class="stat-card">
+        <div class="num">${stats.streak}</div>
+        <div class="label">🔥 连续打卡</div>
+      </div>
+      <div class="stat-card">
+        <div class="num">${stats.longestStreak}</div>
+        <div class="label">🏆 最长连续</div>
+      </div>
+      <div class="stat-card">
+        <div class="label" style="margin-bottom:4px">📅 本月打卡率</div>
+        <div class="num" style="font-size:24px">${monthRate}%</div>
+        <div class="label">${stats.monthFull}/${stats.today} 天满5条</div>
+        <div class="stat-bar"><div class="fill" style="width:${monthRate}%"></div></div>
+      </div>
+      <div class="stat-card">
+        <div class="label" style="margin-bottom:4px">📊 本周打卡率</div>
+        <div class="num" style="font-size:24px">${weekRate}%</div>
+        <div class="label">${stats.weekFull}/${new Date().getDay()+1} 天满5条</div>
+        <div class="stat-bar"><div class="fill" style="width:${weekRate}%"></div></div>
+      </div>
+    `;
+  },
+
+  // ====== SEARCH ======
+  searchDate() {
+    const input = document.getElementById('searchInput').value.trim();
+    if (!input) return;
+
+    let key = null;
+    // Try YYYY-MM-DD format
+    if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(input)) {
+      const [y,m,d] = input.split('-').map(Number);
+      key = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    }
+    // Try "5月26日" format
+    const m = input.match(/(\d{1,2})月(\d{1,2})日?/);
+    if (m) {
+      const now = new Date();
+      key = `${now.getFullYear()}-${String(Number(m[1])).padStart(2,'0')}-${String(Number(m[2])).padStart(2,'0')}`;
+    }
+
+    if (key) {
+      this.showDetail(key);
+    } else {
+      showToast('格式不对，试试 2026-05-26 或 5月26日', true);
+    }
+  },
+
+  // ====== DETAIL MODAL ======
+  showDetail(dateKey) {
+    const data = loadData();
+    const entry = data.entries[dateKey];
+    document.getElementById('modalDate').textContent = formatDate(dateKey);
+    const list = document.getElementById('modalItems');
+    if (entry && entry.items) {
+      list.innerHTML = entry.items.map((t, i) => {
+        const text = t.trim();
+        return text
+          ? `<li>${i+1}. ${this.esc(text)}</li>`
+          : `<li class="empty">${i+1}. 未记录</li>`;
+      }).join('');
+    } else {
+      list.innerHTML = '<li class="empty">该日没有记录</li>';
+    }
+    document.getElementById('detailModal').classList.add('open');
+  },
+
+  esc(text) {
+    const d = document.createElement('div');
+    d.textContent = text;
+    return d.innerHTML;
+  },
+
+  bindEvents() {
+    // Tabs
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+        document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+        if (tab.dataset.tab === 'calendar') this.openCalendar();
+        if (tab.dataset.tab === 'stats') this.renderStats();
+      });
+    });
+
+    // Save
+    document.getElementById('btnSave').addEventListener('click', () => this.handleSave());
+
+    // Calendar nav
+    document.getElementById('calPrev').addEventListener('click', () => this.changeMonth(-1));
+    document.getElementById('calNext').addEventListener('click', () => this.changeMonth(1));
+
+    // Calendar day click
+    document.getElementById('calGrid').addEventListener('click', (e) => {
+      const cell = e.target.closest('.cal-cell');
+      if (cell && cell.dataset.date) this.showDetail(cell.dataset.date);
+    });
+
+    // Search
+    document.getElementById('searchBtn').addEventListener('click', () => this.searchDate());
+    document.getElementById('searchInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') this.searchDate();
+    });
+
+    // Modal close
+    document.getElementById('modalClose').addEventListener('click', () => {
+      document.getElementById('detailModal').classList.remove('open');
+    });
+    document.getElementById('detailModal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) document.getElementById('detailModal').classList.remove('open');
+    });
+
+    // Export / Import
+    document.getElementById('btnExportText').addEventListener('click', () => exportReadableText());
+    document.getElementById('btnImport').addEventListener('click', () => importBackup());
+    document.getElementById('importFile').addEventListener('change', (e) => {
+      if (e.target.files[0]) handleImport(e.target.files[0]);
+      e.target.value = '';
+    });
+
+    // Reminder banner
+    document.getElementById('reminderExport').addEventListener('click', () => exportReadableText());
+
+    // Auto-save draft on blur
+    const list = document.getElementById('entryList');
+    let blurTimer;
+    list.addEventListener('blur', (e) => {
+      if (e.target.classList.contains('entry-input')) {
+        clearTimeout(blurTimer);
+        blurTimer = setTimeout(() => {
+          const textareas = document.querySelectorAll('.entry-input');
+          const items = Array.from(textareas).map(ta => ta.value.trim());
+          const todayKey = getTodayKey();
+          this.data.entries[todayKey] = {
+            items: items,
+            timestamp: new Date().toISOString()
+          };
+          saveData(this.data);
+        }, 500);
+      }
+    }, true);
+
+    // Ctrl+Enter to allow newline in textarea; plain Enter does nothing special
+  }
+};
+
+function initApp() {
+  app.data = loadData();
+  app.init();
+}
+
+document.addEventListener('DOMContentLoaded', () => initApp());
+</script>
+</body>
+</html>
