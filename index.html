@@ -384,21 +384,18 @@ function exportReadableText() {
 
   const text = lines.join('\n');
 
-  // Try Web Share API first (mobile)
-  if (navigator.share && navigator.canShare) {
-    const blob = new Blob([text], { type: 'text/plain' });
-    const file = new File([blob], `成功日记_${getTodayKey()}.txt`, { type: 'text/plain' });
-    const shareData = { files: [file], title: '成功日记导出' };
-    if (navigator.canShare(shareData)) {
-      navigator.share(shareData).then(() => {
-        markExported();
-      }).catch(() => {
-        downloadText(text);
-      });
-      return;
-    }
+  // 1. Try text share (works on mobile + desktop)
+  if (navigator.share) {
+    navigator.share({ text: text }).then(() => {
+      markExported();
+      showToast('已分享');
+    }).catch(() => {
+      downloadText(text);
+    });
+    return;
   }
 
+  // 2. Fallback: download
   downloadText(text);
 }
 
@@ -711,26 +708,44 @@ const app = {
     // Reminder banner
     document.getElementById('reminderExport').addEventListener('click', () => exportReadableText());
 
-    // Auto-save draft on blur
+    // Auto-save: debounced on every keystroke
     const list = document.getElementById('entryList');
-    let blurTimer;
-    list.addEventListener('blur', (e) => {
-      if (e.target.classList.contains('entry-input')) {
-        clearTimeout(blurTimer);
-        blurTimer = setTimeout(() => {
-          const textareas = document.querySelectorAll('.entry-input');
-          const items = Array.from(textareas).map(ta => ta.value.trim());
-          const todayKey = getTodayKey();
-          this.data.entries[todayKey] = {
-            items: items,
-            timestamp: new Date().toISOString()
-          };
-          saveData(this.data);
-        }, 500);
-      }
-    }, true);
+    let saveTimer;
+    const doAutoSave = () => {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        const textareas = document.querySelectorAll('.entry-input');
+        const items = Array.from(textareas).map(ta => ta.value.trim());
+        const todayKey = getTodayKey();
+        this.data.entries[todayKey] = {
+          items: items,
+          timestamp: new Date().toISOString()
+        };
+        saveData(this.data);
+      }, 1500);
+    };
 
-    // Ctrl+Enter to allow newline in textarea; plain Enter does nothing special
+    // Save as user types
+    list.addEventListener('input', (e) => {
+      if (e.target.classList.contains('entry-input')) doAutoSave();
+    });
+
+    // Save when leaving a field
+    list.addEventListener('focusout', (e) => {
+      if (e.target.classList.contains('entry-input')) doAutoSave();
+    });
+
+    // Save when closing the tab/app
+    window.addEventListener('beforeunload', () => {
+      const textareas = document.querySelectorAll('.entry-input');
+      const items = Array.from(textareas).map(ta => ta.value.trim());
+      const todayKey = getTodayKey();
+      this.data.entries[todayKey] = {
+        items: items,
+        timestamp: new Date().toISOString()
+      };
+      saveData(this.data);
+    });
   }
 };
 
