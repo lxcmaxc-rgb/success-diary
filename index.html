@@ -177,7 +177,7 @@ body{
   <button class="btn-export" id="btnExportText">📤 导出文本</button>
   <button class="btn-import" id="btnImport">📥 导入恢复</button>
 </div>
-<input type="file" id="importFile" accept=".json" style="display:none">
+<input type="file" id="importFile" accept=".txt,.json" style="display:none">
 
 <!-- Modal -->
 <div class="modal-overlay" id="detailModal">
@@ -388,19 +388,7 @@ function exportReadableText() {
   const jsonPart = JSON.stringify(data);
   const combined = text + '\n\n---JSON---\n' + jsonPart + '\n---JSON---\n';
 
-  // Mobile: try share API, fallback to download
-  // Desktop: always download
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  if (isMobile && navigator.share) {
-    navigator.share({ text: combined }).then(() => {
-      markExported();
-      showToast('已分享');
-    }).catch(() => {
-      downloadExport(combined);
-    });
-    return;
-  }
-
+  // Always download a file (share doesn't save a file, so import would fail)
   downloadExport(combined);
 }
 
@@ -415,7 +403,12 @@ function downloadExport(text) {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
   markExported();
-  showToast('已导出（可阅读可恢复）');
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (isMobile) {
+    showToast('已保存到下载文件夹，可在"文件"中找到');
+  } else {
+    showToast('已导出（可阅读可恢复）');
+  }
 }
 
 function importBackup() {
