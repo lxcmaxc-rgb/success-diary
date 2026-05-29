@@ -997,13 +997,36 @@ body{
     R('');
     R('实勘照片（共 ' + d.photos.length + ' 张）');
 
-    // Track photo rows for image insertion (1-indexed, add data rows first)
-    var photoImagePositions = [];
-    d.photos.forEach(function(p, i){
-      var rowNum = ws1.rowCount + 1; // next row (1-indexed in ExcelJS)
-      R('照片'+(i+1), p.desc||'（无描述）');
-      if(p.src) photoImagePositions.push({ src: p.src, row: rowNum });
-    });
+    // Pre-load photo dimensions for aspect-ratio-correct scaling
+    var photoInfos = [];
+    for(var i = 0; i < d.photos.length; i++){
+      var p = d.photos[i];
+      var dims = p.src ? await getImageSize(p.src) : null;
+      photoInfos.push({ src: p.src, desc: p.desc, w: dims?dims.w:4, h: dims?dims.h:3 });
+    }
+
+    // Add photo images + description rows
+    var MAX_IMG_W = 340;
+    for(var i = 0; i < photoInfos.length; i++){
+      var pf = photoInfos[i];
+      if(pf.src){
+        // Dedicated tall row for image (column 0, spans both cols visually)
+        var imgRowNum = ws1.rowCount + 1;
+        ws1.addRow(['', '']);
+        var ratio = pf.w / pf.h;
+        var imgH = Math.round(MAX_IMG_W / ratio);
+        ws1.getRow(imgRowNum).height = Math.round(imgH * 0.72); // px->pt
+        // Merge cells A-B for the image row
+        ws1.mergeCells(imgRowNum, 1, imgRowNum, 2);
+        try {
+          var ext = pf.src.indexOf('image/png')!==-1 ? 'png' : 'jpeg';
+          var imgId = wb.addImage({ base64: pf.src, extension: ext });
+          ws1.addImage(imgId, { tl:{col:0, row:imgRowNum-1}, ext:{width:MAX_IMG_W, height:imgH} });
+        } catch(e){ /* skip broken image */ }
+      }
+      // Description row below the image
+      R('照片'+(i+1), pf.desc||'（无描述）');
+    }
 
     R(''); R('线上推广');
     R('推广平台', platforms.join('、')||'无');
@@ -1027,21 +1050,6 @@ body{
     R('微信', d.contactWechat||'');
     R('备注', d.contactNote||'');
     R(''); R('', '报告生成于 ' + (d.date||todayStr()));
-
-    // Embed photos
-    for(var pi = 0; pi < photoImagePositions.length; pi++){
-      try {
-        var pInfo = photoImagePositions[pi];
-        var ext = pInfo.src.indexOf('image/png') !== -1 ? 'png' : 'jpeg';
-        var imgId = wb.addImage({ base64: pInfo.src, extension: ext });
-        ws1.addImage(imgId, {
-          tl: { col: 1, row: pInfo.row - 1 }, // 0-indexed
-          ext: { width: 220, height: 140 }
-        });
-        // Make the row taller to fit the image
-        ws1.getRow(pInfo.row).height = 110;
-      } catch(e){ /* skip broken images */ }
-    }
 
     // ---- Sheet 2: 数据汇总 (horizontal) ----
     var ws2 = wb.addWorksheet('数据汇总');
@@ -1103,6 +1111,15 @@ body{
     a.href = url; a.download = filename;
     document.body.appendChild(a); a.click();
     document.body.removeChild(a); URL.revokeObjectURL(url);
+  }
+
+  function getImageSize(src){
+    return new Promise(function(resolve){
+      var img = new Image();
+      img.onload = function(){ resolve({w:img.naturalWidth, h:img.naturalHeight}); };
+      img.onerror = function(){ resolve(null); };
+      img.src = src;
+    });
   }
 
   // ===== Export buttons =====
