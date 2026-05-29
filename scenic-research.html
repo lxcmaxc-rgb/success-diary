@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>景区调研记录</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC",sans-serif;
+  background:#f5f1eb;color:#3d3d3d;min-height:100vh;
+  -webkit-tap-highlight-color:transparent;
+}
+.container{max-width:600px;margin:0 auto;padding:14px 14px 80px}
+
+/* ===== Top Bar ===== */
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 0 12px}
+.top-bar h1{font-size:20px;font-weight:700;color:#5a4a3a}
+.top-bar .top-actions{display:flex;gap:8px;align-items:center}
+.top-bar .btn-save{
+  background:#c9a87c;color:#fff;border:none;
+  padding:6px 14px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600
+}
+.top-bar .btn-save:active{background:#b8976a}
+.top-bar .btn-clear{
+  background:#fff;border:1.5px solid #d4c4b4;color:#9a7a5a;
+  padding:6px 14px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit
+}
+.auto-save-dot{
+  font-size:11px;color:#8a7a6a;opacity:0;transition:opacity .3s;
+  white-space:nowrap;margin-right:4px
+}
+.auto-save-dot.flash{opacity:1}
+
+/* ===== Section Card ===== */
+.section{
+  background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:12px;
+  box-shadow:0 1px 6px rgba(0,0,0,.04)
+}
+.section-title{
+  font-size:15px;font-weight:700;color:#5a4a3a;margin-bottom:10px;
+  padding-bottom:7px;border-bottom:2px solid #ede4d8;
+  display:flex;align-items:center;gap:8px
+}
+.section-title .icon{font-size:18px}
+
+/* ===== Field ===== */
+.field{margin-bottom:12px}
+.field:last-child{margin-bottom:0}
+.field-label{
+  font-size:13px;font-weight:600;color:#8a7a6a;margin-bottom:4px;
+}
+
+/* ===== Compact row ===== */
+.row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.row:last-child{margin-bottom:0}
+.row .row-label{font-size:13px;font-weight:600;color:#8a7a6a;flex-shrink:0;min-width:60px}
+.row .input-text{flex:1}
+
+.row-2{display:flex;gap:10px;margin-bottom:10px}
+.row-2:last-child{margin-bottom:0}
+.row-2 .field-inline{flex:1;min-width:0}
+.row-2 .field-inline .field-label{font-size:13px;font-weight:600;color:#8a7a6a;margin-bottom:4px}
+.row-2 .input-text,.row-2 .input-date{width:100%}
+
+/* ===== Visitor number with unit ===== */
+.row-3{display:flex;gap:8px;margin-bottom:10px}
+.row-3:last-child{margin-bottom:0}
+.row-3 .field-inline{flex:1;min-width:0}
+.row-3 .field-inline .field-label{font-size:12px;font-weight:600;color:#8a7a6a;margin-bottom:3px;text-align:center}
+.num-with-unit{display:flex;align-items:center;gap:0;border:2px solid #e8dccc;border-radius:8px;overflow:hidden;background:#fefdfb}
+.num-with-unit:focus-within{border-color:#c9a87c}
+.num-with-unit input{
+  flex:1;padding:8px 6px 8px 10px;border:none;outline:none;
+  font-size:15px;font-family:inherit;color:#3d3d3d;background:transparent;
+  text-align:center;min-width:0
+}
+.num-with-unit input::placeholder{color:#d4c4b4;font-size:13px}
+.num-with-unit .unit{padding:8px 10px 8px 4px;font-size:13px;color:#8a7a6a;font-weight:600;flex-shrink:0}
+
+/* ===== Text Input ===== */
+.input-text{
+  width:100%;padding:9px 12px;border:2px solid #e8dccc;border-radius:10px;
+  font-size:15px;font-family:inherit;color:#3d3d3d;background:#fefdfb;
+  outline:none;transition:border-color .2s
+}
+.input-text:focus{border-color:#c9a87c}
+.input-text::placeholder{color:#c4b4a4}
+.input-textarea{
+  width:100%;padding:9px 12px;border:2px solid #e8dccc;border-radius:10px;
+  font-size:15px;font-family:inherit;color:#3d3d3d;background:#fefdfb;
+  outline:none;transition:border-color .2s;resize:vertical;min-height:60px;line-height:1.5
+}
+.input-textarea:focus{border-color:#c9a87c}
+.input-textarea::placeholder{color:#c4b4a4}
+
+.input-date{
+  padding:9px 12px;border:2px solid #e8dccc;border-radius:10px;
+  font-size:15px;font-family:inherit;color:#3d3d3d;background:#fefdfb;
+  outline:none;width:100%
+}
+.input-date:focus{border-color:#c9a87c}
+
+/* ===== Chips (single-select) ===== */
+.chip-group{display:flex;flex-wrap:wrap;gap:6px}
+.chip{
+  padding:7px 14px;border:2px solid #e8dccc;border-radius:18px;
+  font-size:13px;font-family:inherit;color:#6a5a4a;background:#fff;
+  cursor:pointer;transition:.15s;user-select:none
+}
+.chip.selected{background:#c9a87c;color:#fff;border-color:#c9a87c}
+.chip:active{transform:scale(.96)}
+.chip-group.small{gap:5px}
+.chip-group.small .chip{padding:5px 12px;font-size:12px;border-radius:16px}
+
+/* ===== Check-chips (multi-select) ===== */
+.check-group{display:flex;flex-wrap:wrap;gap:6px}
+.check-chip{
+  padding:7px 14px;border:2px solid #e8dccc;border-radius:18px;
+  font-size:13px;font-family:inherit;color:#6a5a4a;background:#fff;
+  cursor:pointer;transition:.15s;user-select:none;display:flex;align-items:center;gap:5px
+}
+.check-chip .dot{
+  width:16px;height:16px;border-radius:4px;border:2px solid #d4c4b4;
+  display:flex;align-items:center;justify-content:center;font-size:11px;color:transparent
+}
+.check-chip.checked{background:#f5e6d0;border-color:#c9a87c}
+.check-chip.checked .dot{background:#c9a87c;border-color:#c9a87c;color:#fff}
+.check-chip:active{transform:scale(.96)}
+
+/* ===== Pricing area ===== */
+.pricing-area{margin-top:8px;display:none}
+.pricing-area.show{display:block}
+.pricing-item{background:#fdfaf5;border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.pricing-item:last-child{margin-bottom:0}
+.pricing-item .pricing-label{font-size:13px;font-weight:700;color:#5a4a3a;margin-bottom:8px}
+.pricing-row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.pricing-row:last-child{margin-bottom:0}
+.pricing-tag{font-size:12px;font-weight:600;color:#8a7a6a;flex-shrink:0;min-width:40px}
+.pricing-row .chip-group.small{gap:4px}
+.pricing-row .chip-group.small .chip{padding:5px 10px;font-size:12px}
+.pricing-row .num-with-unit{width:72px;flex-shrink:0}
+.pricing-row .num-with-unit input{padding:7px 4px 7px 8px;font-size:14px}
+.pricing-row .num-with-unit .unit{padding:7px 8px 7px 2px;font-size:12px}
+.pricing-row .input-text{padding:7px 10px;font-size:14px}
+.custom-type-input{margin-top:6px}
+
+/* ===== Stars ===== */
+.star-group{display:flex;gap:4px}
+.star-btn{
+  font-size:28px;cursor:pointer;color:#e8dccc;transition:.1s;user-select:none;line-height:1
+}
+.star-btn.active{color:#e0a830}
+.star-btn:active{transform:scale(.9)}
+
+/* ===== Photos ===== */
+.photo-slot{border:2px dashed #d4c4b4;border-radius:12px;overflow:hidden;margin-bottom:8px}
+.photo-slot .photo-img{
+  width:100%;height:180px;background:#f5f1eb;
+  display:flex;align-items:center;justify-content:center;
+  color:#c4b4a4;font-size:40px;cursor:pointer;user-select:none
+}
+.photo-slot .photo-img img{width:100%;height:100%;object-fit:cover}
+.photo-slot .photo-desc{
+  width:100%;padding:8px 12px;border:none;border-top:1px solid #e8dccc;
+  font-size:14px;font-family:inherit;color:#3d3d3d;background:#fefdfb;outline:none
+}
+.photo-slot .photo-desc::placeholder{color:#c4b4a4}
+.photo-slot .photo-actions{display:flex;padding:6px 10px;border-top:1px solid #f0e8dc}
+.photo-slot .photo-actions button{
+  background:none;border:none;font-size:12px;font-family:inherit;cursor:pointer;padding:4px 8px;border-radius:6px
+}
+.photo-slot .btn-retake{color:#9a7a5a}
+.photo-slot .btn-delete{color:#c05050;margin-left:auto}
+.btn-add-photo{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  width:100%;padding:10px;border:2px dashed #d4c4b4;border-radius:12px;
+  background:#fdfaf5;color:#9a7a5a;font-size:14px;font-family:inherit;cursor:pointer;transition:.15s
+}
+.btn-add-photo:active{background:#f5e6d0}
+
+/* ===== Bottom Bar ===== */
+.bottom-bar{
+  position:fixed;bottom:0;left:0;right:0;background:#fff;
+  border-top:1px solid #e8dccc;padding:10px 14px;
+  display:flex;gap:10px;justify-content:center;z-index:50
+}
+.bottom-bar button{flex:1;max-width:180px;padding:12px 0;border-radius:12px;
+  border:none;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s
+}
+.btn-export-html{background:#c9a87c;color:#fff}
+.btn-export-html:active{background:#b8976a}
+.btn-export-excel{background:#ede4d8;color:#5a4a3a}
+.btn-export-excel:active{background:#e0d4c4}
+
+/* ===== Toast ===== */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+  background:#3d3d3d;color:#fff;padding:10px 20px;border-radius:10px;
+  font-size:14px;z-index:200;opacity:0;transition:.3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+
+.footer-note{text-align:center;color:#c4b4a4;font-size:11px;padding:10px 0}
+.hidden-input{display:none}
+</style>
+</head>
+<body>
+
+<div class="container" id="app">
+
+  <!-- ===== Top Bar ===== -->
+  <div class="top-bar">
+    <h1>⛰️ 景区调研</h1>
+    <div class="top-actions">
+      <span class="auto-save-dot" id="autoSaveDot">已保存</span>
+      <button class="btn-save" id="btnSave">💾 保存</button>
+      <button class="btn-clear" id="btnClear">🗑 清空</button>
+    </div>
+  </div>
+
+  <!-- ===== 1. 基本信息 ===== -->
+  <div class="section">
+    <div class="section-title"><span class="icon">📋</span>基本信息</div>
+    <div class="row-2">
+      <div class="field-inline">
+        <div class="field-label">景区名称</div>
+        <input class="input-text" type="text" data-key="scenicName" placeholder="例：黄山风景区">
+      </div>
+      <div class="field-inline">
+        <div class="field-label">所在城市</div>
+        <input class="input-text" type="text" data-key="city" placeholder="例：安徽省黄山市">
+      </div>
+    </div>
+    <div class="row-2">
+      <div class="field-inline">
+        <div class="field-label">调研日期</div>
+        <input class="input-date" type="date" data-key="date" id="datePicker">
+      </div>
+      <div class="field-inline">
+        <div class="field-label">调研人员</div>
+        <input class="input-text" type="text" data-key="researcher" placeholder="你的名字">
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 2. 负责人对接 ===== -->
+  <div class="section">
+    <div class="section-title"><span class="icon">👤</span>负责人对接</div>
+    <div class="row">
+      <span class="row-label">对接状态</span>
+      <div class="chip-group small" data-field="contactStatus">
+        <span class="chip" data-value="已对接">已对接</span>
+        <span class="chip" data-value="未找到">未找到</span>
+        <span class="chip" data-value="无需对接">无需对接</span>
+      </div>
+    </div>
+    <div class="row-2">
+      <div class="field-inline">
+        <div class="field-label">姓名</div>
+        <input class="input-text" type="text" data-key="contactName" placeholder="负责人姓名">
+      </div>
+      <div class="field-inline">
+        <div class="field-label">职务</div>
+        <input class="input-text" type="text" data-key="contactTitle" placeholder="例：运营经理">
+      </div>
+    </div>
+    <div class="row-2">
+      <div class="field-inline">
+        <div class="field-label">电话</div>
+        <input class="input-text" type="tel" data-key="contactPhone" placeholder="手机号或座机">
+      </div>
+      <div class="field-inline">
+        <div class="field-label">微信</div>
+        <input class="input-text" type="text" data-key="contactWechat" placeholder="微信号">
+      </div>
+    </div>
+    <div class="field" style="margin-top:2px">
+      <div class="field-label">备注</div>
+      <textarea class="input-textarea" data-key="contactNote" placeholder="沟通内容、合作意向等" style="min-height:50px"></textarea>
+    </div>
+  </div>
+
+  <!-- ===== 3. 现场实勘 ===== -->
+  <div class="section">
+    <div class="section-title"><span class="icon">🔍</span>现场实勘</div>
+    <div class="row">
+      <span class="row-label">景区类型</span>
+      <div class="chip-group small" data-field="scenicType" id="scenicTypeGroup">
+        <span class="chip" data-value="2A">2A</span>
+        <span class="chip" data-value="3A">3A</span>
+        <span class="chip" data-value="4A">4A</span>
+        <span class="chip" data-value="5A">5A</span>
+        <span class="chip" data-value="网红景区">网红景区</span>
+        <span class="chip" data-value="新景区/其他">新景区/其他</span>
+      </div>
+      <div class="custom-type-input" id="customTypeInput" style="display:none">
+        <input class="input-text" type="text" data-key="scenicTypeCustom" placeholder="请填写景区类型">
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">预计日客流（单位：千）</div>
+      <div class="row-3">
+        <div class="field-inline">
+          <div class="field-label">工作日</div>
+          <div class="num-with-unit"><input type="number" data-key="visitorsWeekday" placeholder="3" min="0" max="9999"><span class="unit">千</span></div>
+        </div>
+        <div class="field-inline">
+          <div class="field-label">周末</div>
+          <div class="num-with-unit"><input type="number" data-key="visitorsWeekend" placeholder="8" min="0" max="9999"><span class="unit">千</span></div>
+        </div>
+        <div class="field-inline">
+          <div class="field-label">节假日</div>
+          <div class="num-with-unit"><input type="number" data-key="visitorsHoliday" placeholder="20" min="0" max="9999"><span class="unit">千</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <span class="row-label">景观分布</span>
+      <div class="chip-group small" data-field="landscape">
+        <span class="chip" data-value="集中（步行可达）">集中（步行可达）</span>
+        <span class="chip" data-value="分散（需交通工具）">分散（需交通工具）</span>
+        <span class="chip" data-value="混合">混合</span>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">现有代步工具</div>
+      <div class="check-group" data-field="vehicles" id="vehicleCheckGroup">
+        <span class="check-chip" data-value="四轮自行车"><span class="dot">✓</span>四轮自行车</span>
+        <span class="check-chip" data-value="四轮电瓶车"><span class="dot">✓</span>四轮电瓶车</span>
+        <span class="check-chip" data-value="观光车"><span class="dot">✓</span>观光车</span>
+        <span class="check-chip" data-value="无"><span class="dot">✓</span>无</span>
+        <span class="check-chip" data-value="其他"><span class="dot">✓</span>其他</span>
+      </div>
+    </div>
+    <div class="pricing-area" id="pricingArea">
+      <div class="field-label" style="margin-bottom:6px">现有代步工具收费方案</div>
+      <div class="pricing-item" data-vehicle="四轮自行车" style="display:none">
+        <div class="pricing-label">四轮自行车</div>
+        <div class="pricing-row">
+          <span class="pricing-tag">起步价</span>
+          <div class="chip-group small" data-field="pbike_baseUnit"><span class="chip" data-value="半小时">半小时</span><span class="chip" data-value="一小时起">一小时起</span></div>
+          <div class="num-with-unit"><input type="number" data-key="pbike_basePrice" placeholder="金额" min="0"><span class="unit">元</span></div>
+        </div>
+        <div class="pricing-row">
+          <span class="pricing-tag">超出后</span>
+          <div class="chip-group small" data-field="pbike_overUnit"><span class="chip" data-value="每分钟">每分钟</span><span class="chip" data-value="每半小时">每半小时</span><span class="chip" data-value="每小时">每小时</span></div>
+          <div class="num-with-unit"><input type="number" data-key="pbike_overPrice" placeholder="金额" min="0"><span class="unit">元</span></div>
+        </div>
+        <div class="pricing-row"><span class="pricing-tag">备注</span><input class="input-text" type="text" data-key="pbike_note" placeholder="选填"></div>
+      </div>
+      <div class="pricing-item" data-vehicle="四轮电瓶车" style="display:none">
+        <div class="pricing-label">四轮电瓶车</div>
+        <div class="pricing-row">
+          <span class="pricing-tag">起步价</span>
+          <div class="chip-group small" data-field="pebike_baseUnit"><span class="chip" data-value="半小时">半小时</span><span class="chip" data-value="一小时起">一小时起</span></div>
+          <div class="num-with-unit"><input type="number" data-key="pebike_basePrice" placeholder="金额" min="0"><span class="unit">元</span></div>
+        </div>
+        <div class="pricing-row">
+          <span class="pricing-tag">超出后</span>
+          <div class="chip-group small" data-field="pebike_overUnit"><span class="chip" data-value="每分钟">每分钟</span><span class="chip" data-value="每半小时">每半小时</span><span class="chip" data-value="每小时">每小时</span></div>
+          <div class="num-with-unit"><input type="number" data-key="pebike_overPrice" placeholder="金额" min="0"><span class="unit">元</span></div>
+        </div>
+        <div class="pricing-row"><span class="pricing-tag">备注</span><input class="input-text" type="text" data-key="pebike_note" placeholder="选填"></div>
+      </div>
+      <div class="pricing-item" data-vehicle="观光车" style="display:none">
+        <div class="pricing-label">观光车</div>
+        <div class="pricing-row">
+          <span class="pricing-tag">起步价</span>
+          <div class="chip-group small" data-field="psight_baseUnit"><span class="chip" data-value="半小时">半小时</span><span class="chip" data-value="一小时起">一小时起</span></div>
+          <div class="num-with-unit"><input type="number" data-key="psight_basePrice" placeholder="金额" min="0"><span class="unit">元</span></div>
+        </div>
+        <div class="pricing-row">
+          <span class="pricing-tag">超出后</span>
+          <div class="chip-group small" data-field="psight_overUnit"><span class="chip" data-value="每分钟">每分钟</span><span class="chip" data-value="每半小时">每半小时</span><span class="chip" data-value="每小时">每小时</span></div>
+          <div class="num-with-unit"><input type="number" data-key="psight_overPrice" placeholder="金额" min="0"><span class="unit">元</span></div>
+        </div>
+        <div class="pricing-row"><span class="pricing-tag">备注</span><input class="input-text" type="text" data-key="psight_note" placeholder="选填"></div>
+      </div>
+      <div class="pricing-item" data-vehicle="其他" style="display:none">
+        <div class="pricing-label">其他</div>
+        <div class="pricing-row">
+          <span class="pricing-tag">起步价</span>
+          <div class="chip-group small" data-field="pother_baseUnit"><span class="chip" data-value="半小时">半小时</span><span class="chip" data-value="一小时起">一小时起</span></div>
+          <div class="num-with-unit"><input type="number" data-key="pother_basePrice" placeholder="金额" min="0"><span class="unit">元</span></div>
+        </div>
+        <div class="pricing-row">
+          <span class="pricing-tag">超出后</span>
+          <div class="chip-group small" data-field="pother_overUnit"><span class="chip" data-value="每分钟">每分钟</span><span class="chip" data-value="每半小时">每半小时</span><span class="chip" data-value="每小时">每小时</span></div>
+          <div class="num-with-unit"><input type="number" data-key="pother_overPrice" placeholder="金额" min="0"><span class="unit">元</span></div>
+        </div>
+        <div class="pricing-row"><span class="pricing-tag">备注</span><input class="input-text" type="text" data-key="pother_note" placeholder="选填"></div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <span class="row-label">停放点</span>
+      <div class="chip-group small" data-field="parking">
+        <span class="chip" data-value="充足">充足</span>
+        <span class="chip" data-value="有但不足">有但不足</span>
+        <span class="chip" data-value="无专门停放点">无专门停放点</span>
+      </div>
+    </div>
+    <div class="row">
+      <span class="row-label">路面情况</span>
+      <div class="chip-group small" data-field="roadCondition">
+        <span class="chip" data-value="全程平整">全程平整</span>
+        <span class="chip" data-value="大部分平整">大部分平整</span>
+        <span class="chip" data-value="部分崎岖">部分崎岖</span>
+        <span class="chip" data-value="有危险地段">有危险地段</span>
+      </div>
+    </div>
+    <div class="field" style="margin-top:2px">
+      <div class="field-label">路面备注</div>
+      <textarea class="input-textarea" data-key="roadNote" placeholder="具体描述路面材质、坡度、危险点等" style="min-height:50px"></textarea>
+    </div>
+    <div class="row">
+      <span class="row-label">充电/停车设施</span>
+      <div class="chip-group small" data-field="facilities">
+        <span class="chip" data-value="有且方便">有且方便</span>
+        <span class="chip" data-value="有但不足">有但不足</span>
+        <span class="chip" data-value="无">无</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 4. 实勘照片 ===== -->
+  <div class="section">
+    <div class="section-title"><span class="icon">📸</span>实勘照片</div>
+    <div id="photoList"></div>
+    <button class="btn-add-photo" id="btnAddPhoto">📷 拍摄照片</button>
+    <input type="file" class="hidden-input" id="photoInput" accept="image/*" capture="environment">
+  </div>
+
+  <!-- ===== 5. 线上推广 ===== -->
+  <div class="section">
+    <div class="section-title"><span class="icon">📱</span>线上推广</div>
+    <div class="field">
+      <div class="field-label">推广平台</div>
+      <div class="check-group" data-field="onlinePlatforms">
+        <span class="check-chip" data-value="抖音"><span class="dot">✓</span>抖音</span>
+        <span class="check-chip" data-value="小红书"><span class="dot">✓</span>小红书</span>
+        <span class="check-chip" data-value="快手"><span class="dot">✓</span>快手</span>
+        <span class="check-chip" data-value="公众号"><span class="dot">✓</span>公众号</span>
+        <span class="check-chip" data-value="无"><span class="dot">✓</span>无</span>
+      </div>
+    </div>
+    <div class="row">
+      <span class="row-label">推广活动</span>
+      <div class="chip-group small" data-field="promoActivity">
+        <span class="chip" data-value="有">有</span><span class="chip" data-value="无">无</span>
+      </div>
+    </div>
+    <div class="row">
+      <span class="row-label">直播</span>
+      <div class="chip-group small" data-field="liveStream">
+        <span class="chip" data-value="有">有</span><span class="chip" data-value="无">无</span>
+      </div>
+    </div>
+    <div class="row">
+      <span class="row-label">消费券/门票</span>
+      <div class="chip-group small" data-field="onlineTickets">
+        <span class="chip" data-value="有">有</span><span class="chip" data-value="无">无</span>
+      </div>
+    </div>
+    <div class="field" id="ticketDetailField" style="display:none">
+      <div class="field-label">消费券 / 门票说明</div>
+      <textarea class="input-textarea" data-key="ticketDetail" placeholder="线上售卖的门票类型、价格、优惠券等" style="min-height:50px"></textarea>
+    </div>
+    <div class="field">
+      <div class="field-label">门票最高销量</div>
+      <input class="input-text" type="text" data-key="ticketMaxSales" placeholder="例：5000 张">
+    </div>
+    <div class="field">
+      <div class="field-label">活动券 / 团购券信息</div>
+      <textarea class="input-textarea" data-key="couponInfo" placeholder="团购套餐内容、优惠券类型、核销方式等" style="min-height:60px"></textarea>
+    </div>
+  </div>
+
+  <!-- ===== 6. 综合评估 ===== -->
+  <div class="section">
+    <div class="section-title"><span class="icon">📊</span>综合评估</div>
+    <div class="field">
+      <div class="field-label">适配度评分</div>
+      <div class="star-group" data-field="rating">
+        <span class="star-btn" data-value="1">☆</span><span class="star-btn" data-value="2">☆</span><span class="star-btn" data-value="3">☆</span><span class="star-btn" data-value="4">☆</span><span class="star-btn" data-value="5">☆</span>
+      </div>
+    </div>
+    <div class="field"><div class="field-label">优势</div><textarea class="input-textarea" data-key="strengths" placeholder="景区的有利条件"></textarea></div>
+    <div class="field"><div class="field-label">劣势 / 风险</div><textarea class="input-textarea" data-key="weaknesses" placeholder="存在的问题或隐患"></textarea></div>
+    <div class="field"><div class="field-label">下一步计划</div><textarea class="input-textarea" data-key="nextSteps" placeholder="是否跟进、如何跟进"></textarea></div>
+    <div class="field"><div class="field-label">备注</div><textarea class="input-textarea" data-key="notes" placeholder="其他补充信息"></textarea></div>
+  </div>
+
+  <div class="footer-note">填写完成后点击底部按钮导出</div>
+</div>
+
+<!-- Bottom Bar -->
+<div class="bottom-bar">
+  <button class="btn-export-html" id="btnExportHtml">📤 导出 HTML</button>
+  <button class="btn-export-excel" id="btnExportExcel">📊 导出 Excel</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script>
+(function(){
+  var STORAGE_KEY = 'scenic_research_data';
+
+  // ===== Data helpers =====
+  function collectData(){
+    var d = { photos: [] };
+
+    // Text inputs by data-key
+    document.querySelectorAll('[data-key]').forEach(function(el){
+      d[el.dataset.key] = el.value.trim();
+    });
+
+    // Chip selections (single-select) by data-field
+    document.querySelectorAll('.chip-group[data-field]').forEach(function(group){
+      var sel = group.querySelector('.chip.selected');
+      d[group.dataset.field] = sel ? sel.dataset.value : '';
+    });
+
+    // Check selections (multi-select) by data-field
+    document.querySelectorAll('.check-group[data-field]').forEach(function(group){
+      var vals = [];
+      group.querySelectorAll('.check-chip.checked').forEach(function(c){
+        vals.push(c.dataset.value);
+      });
+      d[group.dataset.field] = vals;
+    });
+
+    // Star rating
+    var stars = document.querySelectorAll('.star-group[data-field="rating"] .star-btn.active');
+    d.rating = stars.length;
+
+    // Photos
+    document.querySelectorAll('.photo-slot').forEach(function(slot){
+      var img = slot.querySelector('img');
+      var desc = slot.querySelector('.photo-desc');
+      d.photos.push({
+        src: img ? img.src : '',
+        desc: desc ? desc.value.trim() : ''
+      });
+    });
+
+    return d;
+  }
+
+  function restoreData(d){
+    if(!d) return;
+
+    // Text inputs
+    document.querySelectorAll('[data-key]').forEach(function(el){
+      if(d[el.dataset.key] !== undefined){
+        el.value = d[el.dataset.key];
+      }
+    });
+
+    // Chip selections
+    document.querySelectorAll('.chip-group[data-field]').forEach(function(group){
+      var val = d[group.dataset.field];
+      if(!val) return;
+      group.querySelectorAll('.chip').forEach(function(c){
+        if(c.dataset.value === val) c.classList.add('selected');
+      });
+      // Trigger dynamic fields
+      if(group.dataset.field === 'scenicType') updateCustomTypeInput();
+      if(group.dataset.field === 'onlineTickets') updateTicketDetail();
+    });
+
+    // Check selections
+    document.querySelectorAll('.check-group[data-field]').forEach(function(group){
+      var vals = d[group.dataset.field];
+      if(!vals || !vals.length) return;
+      group.querySelectorAll('.check-chip').forEach(function(c){
+        if(vals.indexOf(c.dataset.value) !== -1) c.classList.add('checked');
+      });
+      if(group.id === 'vehicleCheckGroup') updatePricingFields();
+    });
+
+    // Star rating
+    var ratingStars = document.querySelectorAll('.star-group[data-field="rating"] .star-btn');
+    var rating = d.rating || 0;
+    ratingStars.forEach(function(s, i){
+      if(i < rating){ s.classList.add('active'); s.textContent = '★'; }
+    });
+
+    // Photos
+    var photoList = document.getElementById('photoList');
+    photoList.innerHTML = '';
+    if(d.photos){
+      d.photos.forEach(function(p){
+        if(p.src){
+          var slot = createPhotoSlot(p.src, p.desc);
+          photoList.appendChild(slot);
+        }
+      });
+    }
+
+    // Update ticket detail visibility
+    updateTicketDetail();
+  }
+
+  // ===== localStorage =====
+  function loadStored(){
+    try{ var raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; }
+    catch(e){ return null; }
+  }
+
+  function saveStored(data){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+    catch(e){ showToast('存储空间不足，请清理照片或导出后清空', true); }
+  }
+
+  function clearStored(){
+    localStorage.removeItem(STORAGE_KEY);
+  }
+
+  // ===== Auto-save =====
+  var autoSaveTimer;
+  var autoSaveDot = document.getElementById('autoSaveDot');
+
+  function scheduleAutoSave(){
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(function(){
+      var data = collectData();
+      saveStored(data);
+      autoSaveDot.classList.add('flash');
+      setTimeout(function(){ autoSaveDot.classList.remove('flash'); }, 1500);
+    }, 800);
+  }
+
+  function manualSave(){
+    clearTimeout(autoSaveTimer);
+    var data = collectData();
+    saveStored(data);
+    showToast('已保存');
+  }
+
+  // ===== Set today date =====
+  var dp = document.getElementById('datePicker');
+  if(dp){
+    var today = new Date();
+    dp.value = today.getFullYear() + '-' +
+      String(today.getMonth()+1).padStart(2,'0') + '-' +
+      String(today.getDate()).padStart(2,'0');
+  }
+
+  // ===== Chip group: single-select (click to toggle) =====
+  document.querySelectorAll('.chip-group').forEach(function(group){
+    group.addEventListener('click', function(e){
+      var chip = e.target.closest('.chip');
+      if(!chip) return;
+      var wasSelected = chip.classList.contains('selected');
+      group.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('selected'); });
+      if(!wasSelected) chip.classList.add('selected');
+      // Dynamic updates
+      var field = group.dataset.field;
+      if(field === 'scenicType') updateCustomTypeInput();
+      if(field === 'onlineTickets') updateTicketDetail();
+      scheduleAutoSave();
+    });
+  });
+
+  // ===== Check group: multi-select =====
+  document.querySelectorAll('.check-group').forEach(function(group){
+    group.addEventListener('click', function(e){
+      var chip = e.target.closest('.check-chip');
+      if(!chip) return;
+      if(chip.dataset.value === '无'){
+        if(!chip.classList.contains('checked')){
+          group.querySelectorAll('.check-chip').forEach(function(c){ c.classList.remove('checked'); });
+          chip.classList.add('checked');
+        } else { chip.classList.remove('checked'); }
+      } else {
+        chip.classList.toggle('checked');
+        var noneChip = group.querySelector('.check-chip[data-value="无"]');
+        if(noneChip) noneChip.classList.remove('checked');
+      }
+      if(group.id === 'vehicleCheckGroup') updatePricingFields();
+      scheduleAutoSave();
+    });
+  });
+
+  // ===== Dynamic fields =====
+  function updatePricingFields(){
+    var pricingArea = document.getElementById('pricingArea');
+    var hasAny = false;
+    ['四轮自行车','四轮电瓶车','观光车','其他'].forEach(function(v){
+      var chip = document.querySelector('#vehicleCheckGroup .check-chip[data-value="' + v + '"]');
+      var item = document.querySelector('.pricing-item[data-vehicle="' + v + '"]');
+      if(chip && item){
+        if(chip.classList.contains('checked')){
+          item.style.display = 'block'; hasAny = true;
+        } else {
+          item.style.display = 'none';
+          item.querySelectorAll('input').forEach(function(el){ el.value = ''; });
+          item.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('selected'); });
+        }
+      }
+    });
+    pricingArea.classList.toggle('show', hasAny);
+  }
+
+  function updateCustomTypeInput(){
+    var customChip = document.querySelector('#scenicTypeGroup .chip[data-value="新景区/其他"]');
+    var customInput = document.getElementById('customTypeInput');
+    if(customChip && customChip.classList.contains('selected')){
+      customInput.style.display = 'block';
+    } else {
+      customInput.style.display = 'none';
+      customInput.querySelector('input').value = '';
+    }
+  }
+
+  function updateTicketDetail(){
+    var ticketChip = document.querySelector('.chip-group[data-field="onlineTickets"] .chip.selected');
+    var ticketField = document.getElementById('ticketDetailField');
+    if(ticketChip && ticketChip.dataset.value === '有'){
+      ticketField.style.display = 'block';
+    } else {
+      ticketField.style.display = 'none';
+      ticketField.querySelector('textarea').value = '';
+    }
+  }
+
+  // ===== Star rating =====
+  document.querySelectorAll('.star-group').forEach(function(group){
+    var stars = group.querySelectorAll('.star-btn');
+    stars.forEach(function(star){
+      star.addEventListener('click', function(){
+        var val = parseInt(this.dataset.value);
+        stars.forEach(function(s, i){
+          if(i < val){ s.classList.add('active'); s.textContent = '★'; }
+          else{ s.classList.remove('active'); s.textContent = '☆'; }
+        });
+        scheduleAutoSave();
+      });
+    });
+  });
+
+  // ===== Photos =====
+  var photoInput = document.getElementById('photoInput');
+  var photoList = document.getElementById('photoList');
+
+  function createPhotoSlot(src, descText){
+    var div = document.createElement('div');
+    div.className = 'photo-slot';
+    div.innerHTML =
+      '<div class="photo-img"><img src="' + src + '" alt="photo"></div>' +
+      '<input class="photo-desc" type="text" placeholder="填写照片拍摄的位置或内容" value="' + (descText||'') + '">' +
+      '<div class="photo-actions"><button class="btn-retake">📷 重拍</button><button class="btn-delete">✕ 删除</button></div>';
+    div.querySelector('.btn-retake').addEventListener('click', function(e){
+      e.stopPropagation(); div._retake = true; photoInput.click();
+    });
+    div.querySelector('.btn-delete').addEventListener('click', function(){
+      div.remove(); scheduleAutoSave();
+    });
+    div.querySelector('.photo-desc').addEventListener('input', function(){ scheduleAutoSave(); });
+    return div;
+  }
+
+  document.getElementById('btnAddPhoto').addEventListener('click', function(){
+    document.querySelectorAll('.photo-slot').forEach(function(s){ s._retake = false; });
+    photoInput.click();
+  });
+
+  photoInput.addEventListener('change', function(e){
+    var file = e.target.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev){
+      var src = ev.target.result;
+      var retakeSlot = null;
+      document.querySelectorAll('.photo-slot').forEach(function(s){ if(s._retake) retakeSlot = s; });
+      if(retakeSlot){
+        retakeSlot.querySelector('.photo-img').innerHTML = '<img src="' + src + '" alt="photo">';
+        retakeSlot.querySelector('.photo-desc').value = '';
+        retakeSlot._retake = false;
+      } else {
+        photoList.appendChild(createPhotoSlot(src, ''));
+      }
+      scheduleAutoSave();
+    };
+    reader.readAsDataURL(file);
+    photoInput.value = '';
+  });
+
+  // ===== Text input auto-save =====
+  document.getElementById('app').addEventListener('input', function(e){
+    if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA'){
+      scheduleAutoSave();
+    }
+  });
+
+  // ===== Clear form =====
+  function clearForm(){
+    document.querySelectorAll('.input-text,.input-textarea').forEach(function(el){ el.value = ''; });
+    document.querySelectorAll('.num-with-unit input').forEach(function(el){ el.value = ''; });
+    document.querySelectorAll('.chip-group .chip').forEach(function(c){ c.classList.remove('selected'); });
+    document.querySelectorAll('.check-group .check-chip').forEach(function(c){ c.classList.remove('checked'); });
+    document.querySelectorAll('.star-group .star-btn').forEach(function(s){ s.classList.remove('active'); s.textContent = '☆'; });
+    photoList.innerHTML = '';
+    document.getElementById('pricingArea').classList.remove('show');
+    document.querySelectorAll('.pricing-item').forEach(function(item){
+      item.style.display = 'none';
+      item.querySelectorAll('input').forEach(function(el){ el.value = ''; });
+      item.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('selected'); });
+    });
+    document.getElementById('customTypeInput').style.display = 'none';
+    document.getElementById('customTypeInput').querySelector('input').value = '';
+    document.getElementById('ticketDetailField').style.display = 'none';
+    document.getElementById('ticketDetailField').querySelector('textarea').value = '';
+    if(dp){
+      var t = new Date();
+      dp.value = t.getFullYear() + '-' + String(t.getMonth()+1).padStart(2,'0') + '-' + String(t.getDate()).padStart(2,'0');
+    }
+    clearStored();
+  }
+
+  document.getElementById('btnClear').addEventListener('click', function(){
+    if(confirm('确定要清空所有填写的内容和照片吗？此操作不可恢复。')){
+      clearForm();
+      showToast('已清空');
+    }
+  });
+
+  // ===== Save button =====
+  document.getElementById('btnSave').addEventListener('click', function(){ manualSave(); });
+
+  // ===== Toast =====
+  var toastTimer;
+  function showToast(msg, warn){
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast' + (warn ? ' warn' : '') + ' show';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ t.className = 'toast'; }, 2000);
+  }
+
+  // ===== Escape HTML =====
+  function esc(s){
+    var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML;
+  }
+
+  // ===== Format pricing =====
+  function fmtPricing(keyPrefix){
+    var baseUnit = (document.querySelector('.chip-group[data-field="' + keyPrefix + '_baseUnit"] .chip.selected')||{}).dataset||{};
+    var basePrice = (document.querySelector('[data-key="' + keyPrefix + '_basePrice"]')||{}).value||'';
+    var overUnit = (document.querySelector('.chip-group[data-field="' + keyPrefix + '_overUnit"] .chip.selected')||{}).dataset||{};
+    var overPrice = (document.querySelector('[data-key="' + keyPrefix + '_overPrice"]')||{}).value||'';
+    var note = (document.querySelector('[data-key="' + keyPrefix + '_note"]')||{}).value||'';
+    var parts = [];
+    if(baseUnit.value && basePrice) parts.push('起步价 ' + baseUnit.value + ' ' + basePrice + '元');
+    if(overUnit.value && overPrice) parts.push('超出后 ' + overUnit.value + ' ' + overPrice + '元');
+    if(note) parts.push(note);
+    return parts.join('；');
+  }
+
+  function collectPricingSummary(v){
+    var map = { '四轮自行车':'pbike','四轮电瓶车':'pebike','观光车':'psight','其他':'pother' };
+    return fmtPricing(map[v] || '');
+  }
+
+  // ==========================================
+  // EXPORT: HTML
+  // ==========================================
+  function exportHTML(){
+    var d = collectData();
+    var photoHTML = '';
+    d.photos.forEach(function(p, i){
+      photoHTML += '<div class="photo-card">' +
+        (p.src ? '<img src="' + p.src + '" alt="photo">' : '<div class="no-img">📷</div>') +
+        '<div class="desc">' + esc(p.desc || '（无描述）') + '</div></div>';
+    });
+    if(!photoHTML) photoHTML = '<div style="color:#c4b4a4;font-size:13px;text-align:center;padding:16px">无照片</div>';
+
+    var vehicles = (d.vehicles||[]).filter(function(v){ return v !== '无'; });
+    var platforms = (d.onlinePlatforms||[]).filter(function(v){ return v !== '无'; });
+
+    var html = '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + esc(d.scenicName||'景区调研') + ' — 调研报告</title>' +
+    '<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans SC",sans-serif;background:#f5f1eb;color:#3d3d3d}.page{max-width:640px;margin:0 auto;padding:20px 16px}' +
+    '.hero{background:#fff;border-radius:14px;padding:24px 20px;text-align:center;margin-bottom:14px;box-shadow:0 1px 6px rgba(0,0,0,.04)}.hero h1{font-size:22px;color:#5a4a3a;margin-bottom:6px}.hero .sub{font-size:13px;color:#b09a7a}.hero .meta{display:flex;justify-content:center;gap:24px;margin-top:12px;font-size:13px;color:#8a7a6a;flex-wrap:wrap}' +
+    '.block{background:#fff;border-radius:14px;padding:16px 18px;margin-bottom:12px;box-shadow:0 1px 6px rgba(0,0,0,.04)}.block h2{font-size:15px;color:#5a4a3a;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #ede4d8}' +
+    '.tbl{width:100%;border-collapse:collapse}.tbl td{padding:5px 0;font-size:14px;vertical-align:top}.tbl .lbl{color:#8a7a6a;font-weight:600;width:80px;white-space:nowrap}.tag{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;margin:1px 3px}.tag-green{background:#d4ebbc;color:#5a8a3a}.tag-blue{background:#d4e0f5;color:#4a6a9a}' +
+    '.visitor-row{display:flex;gap:12px}.visitor-cell{flex:1;text-align:center;background:#fdfaf5;border-radius:10px;padding:10px}.visitor-cell .num{font-size:20px;font-weight:700;color:#5a4a3a}.visitor-cell .lbl{font-size:12px;color:#b09a7a;margin-top:2px}' +
+    '.photos{margin-top:6px}.photo-card{border-radius:8px;overflow:hidden;margin-bottom:8px;display:flex;gap:0;background:#fdfaf5}.photo-card img{width:120px;height:90px;object-fit:cover;border-radius:8px;flex-shrink:0}.photo-card .no-img{width:120px;height:90px;display:flex;align-items:center;justify-content:center;background:#f5f1eb;border-radius:8px;font-size:32px;flex-shrink:0}.photo-card .desc{flex:1;font-size:13px;color:#6a5a4a;padding:8px 10px;display:flex;align-items:center}' +
+    '.stars{color:#e0a830;font-size:20px;letter-spacing:2px}.box{background:#fdfaf5;border-radius:10px;padding:12px;margin-bottom:8px}.box h4{font-size:13px;margin-bottom:4px}.box p{font-size:13px;color:#6a5a4a;line-height:1.5}.footer-note{text-align:center;color:#c4b4a4;font-size:11px;padding:16px 0}' +
+    '@media print{body{background:#fff}.block{box-shadow:none;border:1px solid #e8dccc}}</style></head><body><div class="page">' +
+
+    // Hero
+    '<div class="hero"><h1>⛰️ ' + esc(d.scenicName||'（未填写）') + '</h1><div class="sub">景区调研报告</div>' +
+    '<div class="meta"><span>📍 ' + esc(d.city||'') + '</span><span>📅 ' + esc(d.date||'') + '</span><span>👤 ' + esc(d.researcher||'') + '</span></div></div>' +
+
+    // 现场实勘
+    '<div class="block"><h2>🔍 现场实勘</h2><table class="tbl">' +
+    '<tr><td class="lbl">景区类型</td><td>' + tag(d.scenicType==='新景区/其他'? (d.scenicTypeCustom||'新景区/其他') : d.scenicType) + '</td></tr></table>' +
+    '<div style="margin-top:10px"><div style="font-size:13px;font-weight:600;color:#8a7a6a;margin-bottom:6px">预计日客流（千）</div><div class="visitor-row"><div class="visitor-cell"><div class="num">' + esc(d.visitorsWeekday||'-') + '</div><div class="lbl">工作日</div></div><div class="visitor-cell"><div class="num">' + esc(d.visitorsWeekend||'-') + '</div><div class="lbl">周末</div></div><div class="visitor-cell"><div class="num">' + esc(d.visitorsHoliday||'-') + '</div><div class="lbl">节假日</div></div></div></div>' +
+    '<table class="tbl" style="margin-top:10px">' +
+    '<tr><td class="lbl">景观分布</td><td>' + tag(d.landscape) + '</td></tr>' +
+    '<tr><td class="lbl">代步工具</td><td>' + vehicles.map(function(v){ return tag(v); }).join('') + esc(vehicles.length===0?'（无）':'') + '</td></tr>' +
+    (vehicles.map(function(v){ return '<tr><td class="lbl">' + esc(v) + '收费</td><td>' + esc(collectPricingSummary(v)||'（未填写）') + '</td></tr>'; }).join('')) +
+    '<tr><td class="lbl">停放点</td><td>' + tag(d.parking) + '</td></tr>' +
+    '<tr><td class="lbl">路面情况</td><td>' + tag(d.roadCondition) + '</td></tr>' +
+    '<tr><td class="lbl">路面备注</td><td>' + esc(d.roadNote||'（无）') + '</td></tr>' +
+    '<tr><td class="lbl">充电/停车</td><td>' + tag(d.facilities) + '</td></tr></table></div>' +
+
+    // 实勘照片
+    '<div class="block"><h2>📸 实勘照片</h2><div class="photos">' + photoHTML + '</div></div>' +
+
+    // 线上推广
+    '<div class="block"><h2>📱 线上推广</h2><table class="tbl">' +
+    '<tr><td class="lbl">推广平台</td><td>' + platforms.map(function(v){ return tag(v); }).join('') + esc(platforms.length===0?'（无）':'') + '</td></tr>' +
+    '<tr><td class="lbl">推广活动</td><td>' + tag(d.promoActivity) + '</td></tr>' +
+    '<tr><td class="lbl">直播</td><td>' + tag(d.liveStream) + '</td></tr>' +
+    '<tr><td class="lbl">消费券/门票</td><td>' + tag(d.onlineTickets) + (d.onlineTickets==='有' ? ' — ' + esc(d.ticketDetail||'') : '') + '</td></tr>' +
+    '<tr><td class="lbl">门票最高销量</td><td>' + esc(d.ticketMaxSales||'（未填写）') + '</td></tr>' +
+    '<tr><td class="lbl">活动/团购券</td><td>' + esc(d.couponInfo||'（未填写）') + '</td></tr></table></div>' +
+
+    // 综合评估
+    '<div class="block"><h2>📊 综合评估</h2><table class="tbl">' +
+    '<tr><td class="lbl">适配度</td><td><span class="stars">' + starsHTML(d.rating) + '</span> ' + (d.rating ? d.rating+'分' : '未评分') + '</td></tr></table>' +
+    '<div class="box"><h4 style="color:#5a8a3a">✅ 优势</h4><p>' + esc(d.strengths||'（未填写）') + '</p></div>' +
+    '<div class="box"><h4 style="color:#a05050">⚠️ 劣势 / 风险</h4><p>' + esc(d.weaknesses||'（未填写）') + '</p></div>' +
+    '<table class="tbl"><tr><td class="lbl">下一步</td><td>' + esc(d.nextSteps||'（未填写）') + '</td></tr>' +
+    '<tr><td class="lbl">备注</td><td>' + esc(d.notes||'（无）') + '</td></tr></table></div>' +
+
+    // 负责人对接
+    '<div class="block"><h2>👤 负责人对接</h2><table class="tbl">' +
+    '<tr><td class="lbl">对接状态</td><td>' + tag(d.contactStatus) + '</td></tr>' +
+    '<tr><td class="lbl">姓名</td><td>' + esc(d.contactName||'（未填写）') + '</td></tr>' +
+    '<tr><td class="lbl">职务</td><td>' + esc(d.contactTitle||'（未填写）') + '</td></tr>' +
+    '<tr><td class="lbl">电话</td><td>' + esc(d.contactPhone||'（未填写）') + '</td></tr>' +
+    '<tr><td class="lbl">微信</td><td>' + esc(d.contactWechat||'（未填写）') + '</td></tr>' +
+    '<tr><td class="lbl">备注</td><td>' + esc(d.contactNote||'（无）') + '</td></tr></table></div>' +
+
+    '<div class="footer-note">生成于 ' + (d.date||todayStr()) + ' · 景区调研小程序</div></div></body></html>';
+
+    downloadFile(html, (d.scenicName||'景区') + '_调研报告.html', 'text/html');
+    showToast('HTML 报告已导出');
+  }
+
+  function tag(val){
+    if(!val) return '<span class="tag" style="background:#f0e8dc;color:#b09a7a">未填写</span>';
+    return '<span class="tag tag-blue">' + esc(val) + '</span>';
+  }
+
+  function starsHTML(n){
+    n = n || 0;
+    var s = '';
+    for(var i=0;i<5;i++) s += i<n ? '★' : '☆';
+    return s;
+  }
+
+  function todayStr(){
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  // ==========================================
+  // EXPORT: Excel
+  // ==========================================
+  function exportExcel(){
+    var d = collectData();
+    var wb = XLSX.utils.book_new();
+
+    // ---- Sheet 1: 调研报告 (vertical) ----
+    var vehicles = (d.vehicles||[]).filter(function(v){ return v !== '无'; });
+    var platforms = (d.onlinePlatforms||[]).filter(function(v){ return v !== '无'; });
+
+    var reportRows = [
+      ['', ''],
+      ['景区调研报告', ''],
+      ['', ''],
+      ['基本信息', ''],
+      ['景区名称', d.scenicName||''],
+      ['所在城市', d.city||''],
+      ['调研日期', d.date||''],
+      ['调研人员', d.researcher||''],
+      ['', ''],
+      ['现场实勘', ''],
+      ['景区类型', d.scenicType==='新景区/其他' ? (d.scenicTypeCustom||'新景区/其他') : (d.scenicType||'')],
+      ['', ''],
+      ['预计日客流（千）', '工作日: '+(d.visitorsWeekday||'-')+'  周末: '+(d.visitorsWeekend||'-')+'  节假日: '+(d.visitorsHoliday||'-')],
+      ['', ''],
+      ['景观分布', d.landscape||''],
+      ['现有代步工具', vehicles.join('、')||'无'],
+    ];
+
+    vehicles.forEach(function(v){
+      reportRows.push(['  ' + v + '收费', collectPricingSummary(v)||'（未填写）']);
+    });
+
+    reportRows.push(['车辆停放点', d.parking||'']);
+    reportRows.push(['路面情况', d.roadCondition||'']);
+    reportRows.push(['路面备注', d.roadNote||'']);
+    reportRows.push(['充电/停车设施', d.facilities||'']);
+    reportRows.push(['', '']);
+    reportRows.push(['实勘照片（共 ' + d.photos.length + ' 张）', '']);
+
+    d.photos.forEach(function(p, i){
+      reportRows.push(['照片'+(i+1), p.desc||'（无描述）']);
+    });
+
+    reportRows.push(['', '']);
+    reportRows.push(['线上推广', '']);
+    reportRows.push(['推广平台', platforms.join('、')||'无']);
+    reportRows.push(['推广活动', d.promoActivity||'']);
+    reportRows.push(['直播', d.liveStream||'']);
+    reportRows.push(['消费券/门票', d.onlineTickets||'']);
+    if(d.onlineTickets==='有') reportRows.push(['  消费券/门票说明', d.ticketDetail||'']);
+    reportRows.push(['门票最高销量', d.ticketMaxSales||'']);
+    reportRows.push(['活动券/团购券信息', d.couponInfo||'']);
+    reportRows.push(['', '']);
+    reportRows.push(['综合评估', '']);
+    reportRows.push(['适配度评分', (d.rating ? Array(d.rating).fill('★').join('')+Array(5-d.rating).fill('☆').join('')+' '+d.rating+'分' : '未评分')]);
+    reportRows.push(['优势', d.strengths||'']);
+    reportRows.push(['劣势/风险', d.weaknesses||'']);
+    reportRows.push(['下一步计划', d.nextSteps||'']);
+    reportRows.push(['备注', d.notes||'']);
+    reportRows.push(['', '']);
+    reportRows.push(['负责人对接', '']);
+    reportRows.push(['对接状态', d.contactStatus||'']);
+    reportRows.push(['姓名', d.contactName||'']);
+    reportRows.push(['职务', d.contactTitle||'']);
+    reportRows.push(['电话', d.contactPhone||'']);
+    reportRows.push(['微信', d.contactWechat||'']);
+    reportRows.push(['备注', d.contactNote||'']);
+    reportRows.push(['', '']);
+    reportRows.push(['', '报告生成于 ' + (d.date||todayStr())]);
+
+    var ws1 = XLSX.utils.aoa_to_sheet(reportRows);
+    ws1['!cols'] = [{wch:22},{wch:72}];
+    XLSX.utils.book_append_sheet(wb, ws1, '调研报告');
+
+    // ---- Sheet 2: 数据汇总 (horizontal) ----
+    var headers = [
+      '景区名称','所在城市','调研日期','调研人员',
+      '景区类型','工作日客流(千)','周末客流(千)','节假日客流(千)','景观分布',
+      '现有代步工具',
+      '四轮自行车收费','四轮电瓶车收费','观光车收费','其他代步工具收费',
+      '车辆停放点','路面情况','路面备注','充电/停车设施',
+      '推广平台','推广活动','直播','消费券/门票','消费券/门票说明','门票最高销量','活动券/团购券信息',
+      '适配度评分','优势','劣势/风险','下一步计划','备注',
+      '照片数量','照片描述',
+      '对接状态','负责人姓名','负责人职务','负责人电话','负责人微信','对接备注'
+    ];
+
+    var dataRow = [
+      d.scenicName||'', d.city||'', d.date||'', d.researcher||'',
+      d.scenicType==='新景区/其他' ? (d.scenicTypeCustom||'新景区/其他') : (d.scenicType||''),
+      d.visitorsWeekday||'', d.visitorsWeekend||'', d.visitorsHoliday||'',
+      d.landscape||'',
+      vehicles.join('、'),
+      collectPricingSummary('四轮自行车'), collectPricingSummary('四轮电瓶车'), collectPricingSummary('观光车'), collectPricingSummary('其他'),
+      d.parking||'', d.roadCondition||'', d.roadNote||'', d.facilities||'',
+      platforms.join('、'), d.promoActivity||'', d.liveStream||'', d.onlineTickets||'', d.ticketDetail||'', d.ticketMaxSales||'', d.couponInfo||'',
+      d.rating||'', d.strengths||'', d.weaknesses||'', d.nextSteps||'', d.notes||'',
+      d.photos.length, d.photos.map(function(p){ return p.desc; }).filter(Boolean).join('；'),
+      d.contactStatus||'', d.contactName||'', d.contactTitle||'', d.contactPhone||'', d.contactWechat||'', d.contactNote||''
+    ];
+
+    var ws2 = XLSX.utils.aoa_to_sheet([headers, dataRow]);
+    ws2['!cols'] = [
+      {wch:16},{wch:16},{wch:12},{wch:10},{wch:14},
+      {wch:14},{wch:14},{wch:14},{wch:22},{wch:30},
+      {wch:32},{wch:32},{wch:24},{wch:24},{wch:30},{wch:14},{wch:36},{wch:28},
+      {wch:22},{wch:10},{wch:8},{wch:10},{wch:36},{wch:26},{wch:36},
+      {wch:12},{wch:50},{wch:50},{wch:40},{wch:36},
+      {wch:10},{wch:36},
+      {wch:10},{wch:12},{wch:14},{wch:16},{wch:20},{wch:40}
+    ];
+    XLSX.utils.book_append_sheet(wb, ws2, '数据汇总');
+
+    XLSX.writeFile(wb, (d.scenicName||'景区') + '_调研数据.xlsx');
+    showToast('Excel 已导出');
+  }
+
+  // ===== Download helper =====
+  function downloadFile(content, filename, mime){
+    var blob = new Blob([content], { type: mime + ';charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+  }
+
+  // ===== Export buttons =====
+  document.getElementById('btnExportHtml').addEventListener('click', function(){ exportHTML(); });
+  document.getElementById('btnExportExcel').addEventListener('click', function(){ exportExcel(); });
+
+  // ===== Init: restore saved data =====
+  var saved = loadStored();
+  if(saved) restoreData(saved);
+
+})();
+</script>
+</body>
+</html>
