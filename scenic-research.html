@@ -61,7 +61,8 @@ body{
 .row-2:last-child{margin-bottom:0}
 .row-2 .field-inline{flex:1;min-width:0}
 .row-2 .field-inline .field-label{font-size:13px;font-weight:600;color:#8a7a6a;margin-bottom:4px}
-.row-2 .input-text,.row-2 .input-date{width:100%}
+.row-2 .input-text,.row-2 .input-date{width:100%;max-width:100%}
+.row-2 .input-date{padding:9px 6px;font-size:14px}
 
 /* ===== Visitor number with unit ===== */
 .row-3{display:flex;gap:8px;margin-bottom:10px}
@@ -178,6 +179,9 @@ body{
   background:#fdfaf5;color:#9a7a5a;font-size:14px;font-family:inherit;cursor:pointer;transition:.15s
 }
 .btn-add-photo:active{background:#f5e6d0}
+.photo-warning{
+  text-align:center;color:#c05050;font-size:11px;margin:6px 0 2px
+}
 
 /* ===== Bottom Bar ===== */
 .bottom-bar{
@@ -425,8 +429,9 @@ body{
   <div class="section">
     <div class="section-title"><span class="icon">📸</span>实勘照片</div>
     <div id="photoList"></div>
+    <p class="photo-warning">⚠️ 关闭界面会导致照片丢失，请及时导出</p>
     <button class="btn-add-photo" id="btnAddPhoto">📷 拍摄照片</button>
-    <input type="file" class="hidden-input" id="photoInput" accept="image/*" capture="environment">
+    <input type="file" class="hidden-input" id="photoInput" accept="image/*">
   </div>
 
   <!-- ===== 5. 线上推广 ===== -->
@@ -585,17 +590,10 @@ body{
       if(i < rating){ s.classList.add('active'); s.textContent = '★'; }
     });
 
-    // Photos
+    // Photos — only text descriptions survive localStorage (images don't)
+    // Keep photo area empty on restore; user re-adds photos before export
     var photoList = document.getElementById('photoList');
     photoList.innerHTML = '';
-    if(d.photos){
-      d.photos.forEach(function(p){
-        if(p.src){
-          var slot = createPhotoSlot(p.src, p.desc);
-          photoList.appendChild(slot);
-        }
-      });
-    }
 
     // Update ticket detail visibility
     updateTicketDetail();
@@ -608,8 +606,13 @@ body{
   }
 
   function saveStored(data){
-    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
-    catch(e){ showToast('存储空间不足，请清理照片或导出后清空', true); }
+    // Strip photo base64 to keep localStorage small
+    var lean = JSON.parse(JSON.stringify(data));
+    if(lean.photos){
+      lean.photos = lean.photos.map(function(p){ return { desc: p.desc }; });
+    }
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(lean)); }
+    catch(e){ showToast('保存失败', true); }
   }
 
   function clearStored(){
@@ -884,7 +887,8 @@ body{
     '.block{background:#fff;border-radius:14px;padding:16px 18px;margin-bottom:12px;box-shadow:0 1px 6px rgba(0,0,0,.04)}.block h2{font-size:15px;color:#5a4a3a;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #ede4d8}' +
     '.tbl{width:100%;border-collapse:collapse}.tbl td{padding:5px 0;font-size:14px;vertical-align:top}.tbl .lbl{color:#8a7a6a;font-weight:600;width:80px;white-space:nowrap}.tag{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;margin:1px 3px}.tag-green{background:#d4ebbc;color:#5a8a3a}.tag-blue{background:#d4e0f5;color:#4a6a9a}' +
     '.visitor-row{display:flex;gap:12px}.visitor-cell{flex:1;text-align:center;background:#fdfaf5;border-radius:10px;padding:10px}.visitor-cell .num{font-size:20px;font-weight:700;color:#5a4a3a}.visitor-cell .lbl{font-size:12px;color:#b09a7a;margin-top:2px}' +
-    '.photos{margin-top:6px}.photo-card{border-radius:8px;overflow:hidden;margin-bottom:8px;display:flex;gap:0;background:#fdfaf5}.photo-card img{width:120px;height:90px;object-fit:cover;border-radius:8px;flex-shrink:0}.photo-card .no-img{width:120px;height:90px;display:flex;align-items:center;justify-content:center;background:#f5f1eb;border-radius:8px;font-size:32px;flex-shrink:0}.photo-card .desc{flex:1;font-size:13px;color:#6a5a4a;padding:8px 10px;display:flex;align-items:center}' +
+    '.photos{margin-top:6px}.photo-card{border-radius:8px;overflow:hidden;margin-bottom:8px;display:flex;gap:0;background:#fdfaf5}.photo-card img{width:180px;height:135px;object-fit:cover;border-radius:8px;flex-shrink:0;cursor:pointer}.photo-card .no-img{width:180px;height:135px;display:flex;align-items:center;justify-content:center;background:#f5f1eb;border-radius:8px;font-size:32px;flex-shrink:0}.photo-card .desc{flex:1;font-size:13px;color:#6a5a4a;padding:8px 10px;display:flex;align-items:center}' +
+    '.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:999;align-items:center;justify-content:center}.lightbox.open{display:flex}.lightbox img{max-width:95vw;max-height:95vh;object-fit:contain;border-radius:4px}.lightbox .lb-close{position:absolute;top:12px;right:20px;color:#fff;font-size:36px;cursor:pointer;line-height:1}' +
     '.stars{color:#e0a830;font-size:20px;letter-spacing:2px}.box{background:#fdfaf5;border-radius:10px;padding:12px;margin-bottom:8px}.box h4{font-size:13px;margin-bottom:4px}.box p{font-size:13px;color:#6a5a4a;line-height:1.5}.footer-note{text-align:center;color:#c4b4a4;font-size:11px;padding:16px 0}' +
     '@media print{body{background:#fff}.block{box-shadow:none;border:1px solid #e8dccc}}</style></head><body><div class="page">' +
 
@@ -934,7 +938,8 @@ body{
     '<tr><td class="lbl">微信</td><td>' + esc(d.contactWechat||'（未填写）') + '</td></tr>' +
     '<tr><td class="lbl">备注</td><td>' + esc(d.contactNote||'（无）') + '</td></tr></table></div>' +
 
-    '<div class="footer-note">生成于 ' + (d.date||todayStr()) + ' · 景区调研小程序</div></div></body></html>';
+    '<div class="footer-note">生成于 ' + (d.date||todayStr()) + ' · 景区调研小程序</div>' +
+    '<script>(function(){var lb=document.createElement("div");lb.className="lightbox";lb.innerHTML=\'<span class="lb-close">&times;</span><img>\';lb.addEventListener("click",function(){lb.classList.remove("open")});document.body.appendChild(lb);document.querySelectorAll(".photo-card img").forEach(function(img){img.addEventListener("click",function(e){e.stopPropagation();lb.querySelector("img").src=this.src;lb.classList.add("open")})})})()</' + 'script></div></body></html>';
 
     downloadFile(html, (d.scenicName||'景区') + '_调研报告.html', 'text/html');
     showToast('HTML 报告已导出');
@@ -960,13 +965,14 @@ body{
   // ==========================================
   // EXPORT: Excel
   // ==========================================
-  function exportExcel(){
+  async function exportExcel(){
     var d = collectData();
     var wb = XLSX.utils.book_new();
 
     // ---- Sheet 1: 调研报告 (vertical) ----
     var vehicles = (d.vehicles||[]).filter(function(v){ return v !== '无'; });
     var platforms = (d.onlinePlatforms||[]).filter(function(v){ return v !== '无'; });
+    var photoRows = []; // track row index for each photo image
 
     var reportRows = [
       ['', ''],
@@ -999,6 +1005,8 @@ body{
     reportRows.push(['实勘照片（共 ' + d.photos.length + ' 张）', '']);
 
     d.photos.forEach(function(p, i){
+      var rowIdx = reportRows.length;
+      photoRows.push({ row: rowIdx, src: p.src, desc: p.desc });
       reportRows.push(['照片'+(i+1), p.desc||'（无描述）']);
     });
 
@@ -1031,6 +1039,27 @@ body{
 
     var ws1 = XLSX.utils.aoa_to_sheet(reportRows);
     ws1['!cols'] = [{wch:22},{wch:72}];
+
+    // Embed photos as images in the report sheet
+    var images = [];
+    var loadedImages = await loadPhotoImages(photoRows);
+    loadedImages.forEach(function(imgInfo){
+      if(imgInfo){
+        // Scale image to fit ~3 rows height (approx 60px at ~20px per row)
+        images.push({
+          name: imgInfo.name,
+          data: imgInfo.data,
+          opts: { base64: true },
+          position: {
+            type: 'twoCellAnchor',
+            from: { col: 1, row: imgInfo.row },
+            to: { col: 2, row: imgInfo.row + 2 }
+          }
+        });
+      }
+    });
+    if(images.length) ws1['!images'] = images;
+
     XLSX.utils.book_append_sheet(wb, ws1, '调研报告');
 
     // ---- Sheet 2: 数据汇总 (horizontal) ----
@@ -1076,6 +1105,23 @@ body{
     showToast('Excel 已导出');
   }
 
+  // Load photo images for Excel embedding (strips data URL prefix for SheetJS)
+  function loadPhotoImages(photoRows){
+    return Promise.all(photoRows.map(function(p, i){
+      if(!p.src) return Promise.resolve(null);
+      return new Promise(function(resolve){
+        var img = new Image();
+        img.onload = function(){
+          // Extract base64 from data URL
+          var base64 = p.src.replace(/^data:image\/\w+;base64,/, '');
+          resolve({ row: p.row, name: 'photo'+(i+1), data: base64 });
+        };
+        img.onerror = function(){ resolve(null); };
+        img.src = p.src;
+      });
+    }));
+  }
+
   // ===== Download helper =====
   function downloadFile(content, filename, mime){
     var blob = new Blob([content], { type: mime + ';charset=utf-8' });
@@ -1088,7 +1134,12 @@ body{
 
   // ===== Export buttons =====
   document.getElementById('btnExportHtml').addEventListener('click', function(){ exportHTML(); });
-  document.getElementById('btnExportExcel').addEventListener('click', function(){ exportExcel(); });
+  document.getElementById('btnExportExcel').addEventListener('click', function(){
+    showToast('正在生成 Excel...');
+    exportExcel().catch(function(err){
+      showToast('导出失败: ' + err.message, true);
+    });
+  });
 
   // ===== Init: restore saved data =====
   var saved = loadStored();
